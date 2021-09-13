@@ -1,0 +1,576 @@
+"use strict";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDZcGGW7xXBxOWO-I1WWpkFiA8Y6pCi1Hg",
+  authDomain: "storybits-2c8d4.firebaseapp.com",
+  databaseURL: "https://storybits-2c8d4-default-rtdb.firebaseio.com",
+  projectId: "storybits-2c8d4",
+  storageBucket: "storybits-2c8d4.appspot.com",
+  messagingSenderId: "28045861201",
+  appId: "1:28045861201:web:f73f24a8a6b639d325f370",
+  measurementId: "G-ZM91NKPBXG"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+firebase.analytics();
+
+ // Unpkg imports
+const Web3Modal = window.Web3Modal.default;
+const WalletConnectProvider = window.WalletConnectProvider.default;
+const Fortmatic = window.Fortmatic;
+const evmChains = window.evmChains;
+
+// Web3modal instance
+let web3Modal
+
+// Chosen wallet provider given by the dialog window
+let provider;
+
+let contract_address = "0x029e53DA4f4Ae0D558977cA1181C0Ded97d51765"
+
+// Address of the selected account
+let selectedAccount;
+var ethaddress = ""; 
+
+
+async function init() {
+  const providerOptions = {
+    walletconnect: {
+      package: WalletConnectProvider,
+      options: {
+        infuraId: "a1d2d05b386a403296580b00c8032130",
+      }
+    },
+
+    fortmatic: {
+      package: Fortmatic,
+      options: {
+        key: "pk_test_C99A517CE7B79A76"
+        // key: "pk_live_A4C2D41D64B917E8"
+      }
+    }
+  };
+
+  web3Modal = new Web3Modal({
+    cacheProvider: false, // optional
+    providerOptions, // required
+    disableInjectedProvider: false, // optional. For MetaMask / Brave / Opera.
+    theme: "dark"
+  });
+
+  // if (web3Modal.cachedProvider) {
+  //   onConnect();
+  // }
+  // if (localStorage.getItem("walletProvider") !== null) {
+  //   provider = JSON.parse(localStorage.getItem("walletProvider"));
+  // }
+
+  // document.getElementById("connect").style.display = "inline";
+  console.log("Web3Modal instance is", web3Modal);
+}
+
+// This should be a JSON file with sentence and nft id, so they can click it and
+// take them to opensea.
+// Continuously checks for new versions.
+// Make it so that no one can write to this... read only.
+// To write, they send an http post to a firebase function with the transaction.
+// Can also run a program every few hours that queries the blockchain for all nfts
+// and puts the right ones in.
+
+// Force update
+// https://testnets-api.opensea.io/api/v1/asset/0x375df763cd7b87e3ffb8efad812aae088553664c/1/?force_update=true
+
+var addedNFTs = new Set()
+var showingIds = true;
+var listener;
+
+// function addNFTWithId(id, word){
+//   if (!addedNFTs.has(id)) {
+//     addedNFTs.add(id);
+//     var html = '<a href="https://testnets.opensea.io/assets/0x029e53da4f4ae0d558977ca1181c0ded97d51765/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
+//     html += '<div class="nft text-center my-auto mx-auto">'
+//     html += '<div class="" style="padding-top: 0px;"><p><div style="float:left; padding-right: 5px; color: gray;">' + id.toString() + ": </div>" + word + '</p></div>'
+//     html += '</div></div></a>'
+//     document.getElementById("nfts").innerHTML += html
+//   }
+// }
+
+// function addNFTReadable(id, word){
+//   if (!addedNFTs.has(id)) {
+//     addedNFTs.add(id);
+//     var html = '<a href="https://testnets.opensea.io/assets/0x029e53da4f4ae0d558977ca1181c0ded97d51765/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
+//     html += '<div class="nft_plain text-center my-auto mx-auto">'
+//     html += '<div class="" style="padding-top: 0px;"><p>' + word + '</a></p></div>'
+//     html += '</div></div></a>'
+//     document.getElementById("nfts").innerHTML += html
+//   }
+// }
+
+// async function fetchText() {
+//   var ref = firebase.database().ref('nft_words');
+//   listener = ref.on('value', (snapshot) => {
+//     snapshot.forEach(nft => {
+//       const id = nft.key
+//       const word = nft.val()
+//       addNFTReadable(id, word)  
+//     })
+//   });
+// }
+
+// async function fetchTextWithIds() {
+//   var ref = firebase.database().ref('nft_words');
+//   listener = ref.on('value', (snapshot) => {
+//     snapshot.forEach(nft => {
+//       const id = nft.key
+//       const word = nft.val()
+//       addNFTWithId(id, word)
+//     })
+//   });
+// }
+
+var DispatchGroup = (function() {
+    var nextId = 0
+
+    function DispatchGroup() {
+        var id = ++nextId
+        var tokens = new Set()
+        var onCompleted = null
+
+        function checkCompleted() {
+            if(!tokens.size) {
+                if(onCompleted) {
+                    onCompleted()
+                }
+            }
+        }
+
+        // the only requirement for this is that it's unique during the group's cycle
+        function nextToken() {
+            return Date.now() + Math.random()
+        }
+
+        this.enter = function () {
+            let token = nextToken()
+            tokens.add(token)
+            return token
+        }
+
+        this.leave = function (token) {
+            if(!token) throw new Error("'token' must be the value earlier returned by '.enter()'")
+            tokens.delete(token)
+            checkCompleted()
+        }
+
+        this.notify = function (whenCompleted) {
+            if(!whenCompleted) throw new Error("'whenCompleted' must be defined")
+            onCompleted = whenCompleted
+            checkCompleted()
+        }
+    }
+
+    return DispatchGroup;
+})()
+
+function addNFTWithId(id, word){
+    var html = '<a href="https://testnets.opensea.io/assets/0x029e53da4f4ae0d558977ca1181c0ded97d51765/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
+    html += '<div class="nft text-center my-auto mx-auto">'
+    html += '<div class="" style="padding-top: 0px;"><p><div style="float:left; padding-right: 5px; color: gray;">' + id.toString() + ": </div><div style='float:left;'>" + word + '</div></p></div>'
+    html += '</div></div></a>'
+    document.getElementById("nfts").innerHTML += html
+}
+
+function addNFTReadable(id, word){
+    var html = '<a href="https://testnets.opensea.io/assets/0x029e53da4f4ae0d558977ca1181c0ded97d51765/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
+    html += '<div class="nft_plain text-center my-auto mx-auto">'
+    html += '<div class="" style="padding-top: 0px;"><p>' + word + '</a></p></div>'
+    html += '</div></div></a>'
+    document.getElementById("nfts").innerHTML += html
+}
+
+async function fetchText() {
+  var ref = firebase.database().ref('nft_words');
+  listener = ref.on('value', (snapshot) => {
+    document.getElementById("nfts").innerHTML = ""
+
+    // a new NFT was added, so can skip the timer and allow reservations now
+    // timeLeft = 0;
+
+    snapshot.forEach(nft => {
+      const id = nft.key
+      const word = nft.val()
+      addNFTReadable(id, word)  
+    })
+  });
+}
+
+async function fetchTextWithIds() {
+  var ref = firebase.database().ref('nft_words');
+  listener = ref.on('value', (snapshot) => {
+
+    // a new NFT was added, so can skip the timer and allow reservations now
+    // timeLeft = 0;
+
+    document.getElementById("nfts").innerHTML = ""
+    snapshot.forEach(nft => {
+      const id = nft.key
+      const word = nft.val()
+      addNFTWithId(id, word)
+    })
+  });
+}
+
+async function toggleIds() {
+  firebase.database().ref('nft_words').off('value', listener)
+  addedNFTs = new Set();
+  document.getElementById("nfts").innerHTML = "";
+  if (showingIds) { // hide ids
+    showingIds = false;
+    fetchText();
+    document.getElementById("toggleIds").innerHTML = "Show IDs"
+  }
+  else { // show ids
+    showingIds = true;
+    fetchTextWithIds();
+    document.getElementById("toggleIds").innerHTML = "Switch To Reader View"
+  }
+}
+
+var charge = 0.00008;
+var words = []
+function textChanged() {
+  var text = document.getElementById("nft_sentence_textarea").value;
+  words = text.split(" ");
+  if (words[words.length-1] == "") {
+    words.splice(-1)
+  }
+  // 0.00008
+  charge = (words.length * 0.00008).toFixed(8);
+  if (words.length == 0) {
+    charge = 0.00008
+  }
+  if (words.length <= 1) {
+    document.getElementById("nft_sentence_button").innerHTML = "Mint StoryBit 0.08 ETH"
+  }
+  else {
+    document.getElementById("nft_sentence_button").innerHTML = "Mint " + words.length.toString() + " StoryBits " + charge.toString() + " ETH"
+  }
+}
+
+var minted = false
+// var tokenURIs = []
+var currentTokenIndex = 0
+async function mint() {
+  if (words.length == 0) {
+    return;
+  }
+  await web3Modal.clearCachedProvider()
+  console.log("Opening a dialog", web3Modal);
+  try {
+    provider = await web3Modal.connect();
+
+    const web3 = new Web3(provider);
+    const accounts = await web3.eth.getAccounts();
+    if (accounts !== null) {
+      console.log(accounts[0])
+    }
+  } catch(e) {
+    console.log("Could not get a wallet connection", e);
+    return;
+  }
+
+  // Get a Web3 instance for the wallet
+  const web3 = new Web3(provider);
+  const accounts = await web3.eth.getAccounts();
+  ethaddress = accounts[0];
+
+  console.log(ethaddress);
+
+  // send request to firebase function with timestamp, signature. Edit: just address and disable read from database
+  // except for http cloud function that tells the number of people in queue.
+  // hash the timestamp in the server.
+  // firebase will send back signed message
+  var url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMint?address=" + accounts[0]
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = function() { 
+    if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+      let data = JSON.parse(xmlHttp.responseText);
+
+      if (data.status == "fail") {
+        alert(data.err)
+        return;
+      }
+
+      let timestampMsg = data.time;
+      let r = data.r;
+      let s = data.s;
+      let v = data.v;
+
+      // call mint function with above
+      var totalAmountWei = web3.utils.toWei(charge.toString(), "ether")
+
+      var contract = new web3.eth.Contract([{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"flipSaleState","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string[]","name":"_words","type":"string[]"},{"internalType":"uint256","name":"timestampMsg","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"safeMint","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxNfts","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"price","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"saleIsActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokensMinted","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"words","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}], 
+        contract_address);
+      var safeMint = contract.methods.safeMint(words, timestampMsg, v, r, s).encodeABI();
+
+      // get the previous number of nfts minted
+      const prevTokensMinted = contract.methods.tokensMinted().call().then(function(numPrevTokensMinted) { 
+        // var numPrev = parseInt(numPrevTokensMinted)
+        // Chain ID of Rinkeby Test Net is 4, replace it to 1 for Main Net
+        var chainId = 3;
+        web3.eth.sendTransaction({to:contract_address, from:ethaddress, value: totalAmountWei, data: safeMint, "chainId": chainId})
+        .on('transactionHash', function(hash){
+          console.log("hash")
+          console.log(hash);
+          document.getElementById("nft_sentence_button").disabled = true;
+          minted = true;
+          // **** TODO ****
+          // Maybe put link to etherscan
+          // show some sort of label saying that the transacation is loading
+          // remove that when get the reciept
+          document.getElementById("nft_minting_section").style.display = "block"
+          document.getElementById("nft_minting_wait").style.display = "block";
+          document.getElementById("transacation_link").href = "https://rinkeby.etherscan.io/tx/" + hash
+          document.getElementById("transacation_link").style.display = "block";
+        })
+        .on('receipt', function(receipt){ // transacation was successful
+          setTimeout(function(){ 
+            // **** TODO ****
+            // Query the contract to get the tokenURI. Extract svg from that can create Image for them to save
+            // Hide image once they click the reserve button
+            document.getElementById("nft_minting_wait").style.display = "none";
+
+            const currentTokensMinted = contract.methods.tokensMinted().call().then(function(numCurrentTokensMinted) { 
+              // request the backend to update. pass it the previous number of tokens and the current number.
+              // It'll retrieve only from those range and update only those those.
+              // If fast enough could honestly just remove the frontend-only update.
+                var update_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestNFTUpdate?prevTokensMinted=" + numPrevTokensMinted + "&numCurrentTokensMinted=" + numCurrentTokensMinted
+                var xmlHttpUpdate = new XMLHttpRequest();
+                xmlHttpUpdate.onreadystatechange = function() {
+                  if (xmlHttpUpdate.readyState == 4 && xmlHttpUpdate.status == 200){
+                    console.log(xmlHttpUpdate.responseText);
+                  }
+                }
+                xmlHttpUpdate.open("GET", update_url, true);
+                xmlHttpUpdate.send(null);
+
+                // force update the token on opensea
+                var numPrev = parseInt(numPrevTokensMinted)
+                var numCurrent = parseInt(numCurrentTokensMinted)
+                for (var id=numPrev+1; id<=numCurrent; id++) {
+                  var idString = id.toString()
+                  setTimeout(function timer() {
+                    const options = {method: 'GET'};
+                    fetch('https://testnets-api.opensea.io/api/v1/asset/' + contract_address + '/' + idString + '/?force_update=true', options)
+                    .then(response => response.json())
+                    .then(response => console.log(response))
+                    .catch(err => console.error(err));
+                  }, id * 1500);
+                }
+
+                // set the image preview of the NFT
+                const tokenURI = contract.methods.tokenURI(numCurrent).call().then(function(tokenURIData) {
+                  document.getElementById("svg_img_section").style.display = "block";
+                  setNFTImage(tokenURIData)
+                }, function(error) {
+                  console.log("Couldn't get Token's URI")
+                });
+
+            }, function(error) {
+              console.log("Couldn't get current Token Ids")
+            });
+          }, 2000);
+        })
+        .on('error', console.error); // If a out of gas error, the second parameter is the receipt.
+      }, function(error) {
+        console.log("Couldn't get previous Token Ids")
+      });
+    }  
+  }
+  xmlHttp.open("GET", url, true); // true for asynchronous 
+  xmlHttp.send(null);
+}
+
+function setNFTImage(data) {
+  const encoded1 = data.split(",")[1];
+  const data2 = atob(encoded1);
+  const imageData = JSON.parse(data2).image
+  const encodedImage = imageData.split(",")[1]
+  const decodedSVG = atob(encodedImage)
+
+  var img = new Image();
+  var DOMURL = window.URL || window.webkitURL || window;
+  var svgBlob = new Blob([decodedSVG], {type: 'image/svg+xml;charset=utf-8'});
+  var url = DOMURL.createObjectURL(svgBlob);
+  document.getElementById("svg_img").src = url;
+}
+
+var grantedMintingTimestamp = 0
+var timeLeft = 0
+var reservedTimstamp = 0
+
+async function reserveMintingRights() {
+  if (ethaddress == "") {
+      await web3Modal.clearCachedProvider()
+      console.log("Opening a dialog", web3Modal);
+      try {
+        provider = await web3Modal.connect();
+
+        const web3 = new Web3(provider);
+        const accounts = await web3.eth.getAccounts();
+        if (accounts !== null) {
+          console.log(accounts[0])
+        }
+      } catch(e) {
+        console.log("Could not get a wallet connection", e);
+        return;
+      }
+
+      const web3 = new Web3(provider);
+      console.log("Web3 instance is", web3);
+      const accounts = await web3.eth.getAccounts();
+      ethaddress = accounts[0];
+  }
+
+  document.getElementById("nft_minting_section").style.display = "none"
+  document.getElementById("nft_minting_wait").style.display = "none";
+  document.getElementById("transacation_link").style.display = "none";
+
+  // tokenURIs = []
+  // document.getElementById("prev_img_button").style.display = "none";
+  // document.getElementById("next_img_button").style.display = "none";
+  // document.getElementById("svg_img").style.display = "none";
+  document.getElementById("svg_img_section").style.display = "none";
+
+  var queue_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintReservation?address=" + ethaddress
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = function() {
+    if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+      const data = JSON.parse(xmlHttp.responseText);
+      if (data.status == "success") {
+        grantedMintingTimestamp = data.reserved_timestamp;
+        setCookie('grantedMintingTimestamp',grantedMintingTimestamp,1);
+      }
+      else {
+        alert("Sorry, someone else reserved minting before you.");
+      }
+    }
+  }
+  xmlHttp.open("GET", queue_url, true);
+  xmlHttp.send(null);
+}
+
+async function listenForMintReservation() {
+  var ref = firebase.database().ref('reservationTimestamp');
+  ref.on('value', (snapshot) => {
+    // update the label with the new reservation timestamp
+    // have another function that continuously counts that down until no one is minting
+    // and the reserve button is enabled.
+    // Once have reservation, mint button is enabled.
+    const currentTimestamp = Math.round(Date.now() / 1000);
+    reservedTimstamp = snapshot.val()
+    timeLeft = reservedTimstamp + 300 - currentTimestamp
+  });
+}
+
+function updateTimeLeft() {
+  timeLeft -= 1
+  if (grantedMintingTimestamp == reservedTimstamp) {
+    var timeLeftToMint = timeLeft - 240;
+    if (timeLeftToMint > 0) {
+      document.getElementById("reserve_mint_button").disabled = true;
+      document.getElementById("reserved_counter").style.display = "block";
+      document.getElementById("reserved_counter").innerHTML = "You have " + timeLeftToMint + " seconds left to start the mint."
+      if (minted == false) {
+        document.getElementById("nft_sentence_button").disabled = false;
+      }
+    }
+    else if(timeLeft > 0) {
+      document.getElementById("reserve_mint_button").disabled = true;
+      document.getElementById("reserved_counter").style.display = "block";
+      document.getElementById("reserved_counter").innerHTML = "New minting slot available in " + timeLeft + " seconds (or sooner)"
+      document.getElementById("nft_sentence_button").disabled = true;
+    }
+    else {
+      minted = false
+      document.getElementById("reserved_counter").innerHTML = ""
+      document.getElementById("reserve_mint_button").disabled = false;
+    }
+  }
+  else {
+    document.getElementById("nft_sentence_button").disabled = true;
+    if (timeLeft > 0) {
+      document.getElementById("reserve_mint_button").disabled = true;
+      document.getElementById("reserved_counter").style.display = "block";
+      document.getElementById("reserved_counter").innerHTML = "New minting slot available in " + timeLeft + " seconds (or sooner)"
+    }
+    else {
+      minted = false // newly added, unsure
+      document.getElementById("reserved_counter").innerHTML = ""
+      document.getElementById("reserve_mint_button").disabled = false;
+    }
+  }
+}
+
+function setCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+}
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+
+/**
+ * Main entry point.
+ */
+window.addEventListener('load', async () => {
+  fetchTextWithIds();
+
+  // scrolls to bottom of screen
+  // window.scrollTo(0,document.body.scrollHeight);
+
+  document.getElementById("nft_sentence_textarea").addEventListener("input", (event) => textChanged());
+
+  init();
+  listenForMintReservation()
+  setInterval(function(){
+    updateTimeLeft()
+  }, 1000);
+
+  grantedMintingTimestamp = getCookie('grantedMintingTimestamp');
+
+  // document.querySelector("#connect").addEventListener("click", onConnect);
+  // document.querySelector("#disconnect").addEventListener("click", onDisconnect);
+  document.querySelector("#toggleIds").addEventListener("click", toggleIds);
+  document.querySelector("#nft_sentence_button").addEventListener("click", mint);
+  document.querySelector("#reserve_mint_button").addEventListener("click", reserveMintingRights);
+  // document.querySelector("#prev_img_button").addEventListener("click", viewNextImage);
+  // document.querySelector("#next_img_button").addEventListener("click", viewPrevImage);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,210 @@
+/*!
+ * Start Bootstrap - Landing Page v5.0.9 (https://startbootstrap.com/theme/landing-page)
+ * Copyright 2013-2020 Start Bootstrap
+ * Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-landing-page/blob/master/LICENSE)
+ */
+
+body {
+  font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 700;
+}
+
+#scroll_text {
+  width: 80%;
+}
+
+#scroll_gif {
+  width: 80%;
+}
+
+@media (min-width: 768px) {
+  #scroll_text {
+    width: 35%;
+  }
+
+  #scroll_gif {
+    /*width: 38%;*/
+    width: 25%;
+  }
+}
+
+.brand-logo {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.brand-logo img {
+    width:40%;
+}
+
+.logo-social {
+  padding-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .brand-logo {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .brand-logo img {
+      width:35%;
+  }
+
+  .logo-social {
+    padding-top: 0rem;
+  }
+}
+
+header.masthead {
+  position: relative;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 2rem;
+  background-color: #00a66c;
+  color: white;
+}
+
+header.masthead h1 {
+  font-size: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  header.masthead h1 {
+    font-size: 2.5rem;
+  }
+}
+
+.line {
+  width: 100%;
+  border-bottom: 4px solid #00a66c;
+  position: relative;
+}
+
+@media (min-width: 1000px) {
+  header.masthead h1 {
+    font-size: 2.5rem;
+  }
+
+  .line {
+    width: 770px;
+    border-bottom: 4px solid #00a66c;
+    position: absolute;
+    margin: 0 12%;
+  }
+}
+
+.fab {
+  color: #00a66c
+}
+
+.btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {
+    background-color: #00a66c !important;
+    border-width: 0;
+    color: #FFFFFF;
+}
+
+.features-icons {
+  padding-top: 1rem;
+  padding-bottom: 4rem;
+}
+
+.features-icons .features-icons-item {
+  max-width: 20rem;
+}
+
+.features-icons .features-icons-item .features-icons-icon {
+  height: 7rem;
+}
+
+.features-icons .features-icons-item .features-icons-icon i {
+  font-size: 4.5rem;
+}
+
+.features-icons .features-icons-item:hover .features-icons-icon i {
+  font-size: 5rem;
+}
+
+.acquaintances, .acquaintances:hover, .acquaintances:active, .acquaintances:visited {
+    background-color: #FFFFFF !important;
+    border-width: 1px;
+    border-color: #00a66c;
+    color: #00a66c;
+    font-size: 1rem;
+}
+
+@media (min-width: 1000px) {
+  .acquaintances, .acquaintances:hover, .acquaintances:active, .acquaintances:visited {
+      font-size: 1.3rem;
+  }
+}
+
+.reserve_text{
+  color: #00a66c;
+}
+
+.screenshot {
+  width: 80%;
+}
+
+.screenshot {
+  width: 80%;
+}
+
+.visible-when-small {
+  display: block !important;
+}
+.visible-when-big {
+  display: none !important;
+}
+@media (min-width: 768) {
+  .visible-when-small {
+    display: none !important;
+  }
+  .visible-when-big {
+    display: block !important;
+  }
+}
+
+.block {
+    margin: 10px 50px;
+    display: flex; /* required */
+    flex-flow: row nowrap; /* required */
+}
+.block .background,
+.block .foreground {
+    box-sizing: border-box; /* required */
+    width: 100%; /* required */
+    flex: none; /* required */
+}
+.block .background {
+    /*background: #9ff;*/
+    /*color: #fff;*/
+    /*padding: 15px;*/
+    /*font-size: 30px;*/
+}
+.block .foreground {
+    /*padding: 15px;*/
+    /*border: solid 1px;*/
+    margin-left: -100%; /* required */
+}
+.block .foreground .outside {
+    position: absolute;
+    top: 5px;
+    left: 8px;
+}
+
+
+footer.footer {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}

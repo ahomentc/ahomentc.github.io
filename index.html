@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-TL8GNHF3XS"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-TL8GNHF3XS');
+  </script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>StoryBits</title>
+
+  <link rel="icon" type="image/png" href="img/icon.png" sizes="400x400">
+  <!-- <link rel="icon" type="image/png" href="img/icon_16.png" sizes="16x16"> -->
+  <!-- <link rel="icon" type="image/png" href="img/icon_32.png" sizes="32x32"> -->
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom fonts for this template -->
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+  <link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-analytics.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
+  <!-- Custom styles for this template -->
+  <link href="css/landing-page.css" rel="stylesheet">
+</head>
+<body>  
+
+  <div class="row mx-auto" style="background-color: rgba(0, 0, 0, 0); height: 9%;">
+    <div class="col-lg-12 text-center brand-logo mx-auto my-auto" >
+      <p style="font-size: 35px;">StoryBits</p>
+    </div>
+    <div class="col-lg-12 h-100 text-center mx-auto my-auto">
+      <a class="social_link" target="_blank" href="https://twitter.com/StoryBitsNFT">Twitter</a>
+      <a class="social_link" target="_blank" href="https://testnets.opensea.io/collection/teststorybitsthree">OpenSea</a>
+      <a class="social_link" target="_blank">Discord</a>
+    </div>
+    <div class="col-lg-5 col-md-8 col-sm-10 text-center mx-auto my-auto" style="padding-top: 15px;">
+      <p style="font-size: 18px; color: #8e8e8e;">The first story being created by NFTs. Each word is held on-chain in an NFT. Anybody can mint one of 10k StoryBits to keep the story going!</p>
+    </div>
+    
+  </div>
+
+  <main class="scroll-container">
+
+    <section>
+      <div class="col-lg-6 h-100 text-center mx-auto my-auto" style="padding-top: 40px;">
+        <button id="toggleIds">Switch To Reader View</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="container" id="nfts">
+        
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="row mx-auto mb-2 mt-0">
+            <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
+              <TEXTAREA maxlength="250" placeholder="Continue the story..." id="nft_sentence_textarea"></TEXTAREA>
+            </div>
+        </div>
+        <div class="row mx-auto mb-0 mt-0">
+            <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
+              <button id="nft_sentence_button" disabled >Mint StoryBit 0.08 ETH</button>
+            </div>
+        </div>
+        <div class="row mx-auto mt-4 mt-0" id="nft_minting_section" style="display: none">
+            <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
+              <p style="color: #FFF; display: none;" id="nft_minting_wait">Your NFT is minting, please wait...</p>
+              <a style="color: #FFF; display: none;" id="transacation_link" href="" target="_blank">View Transaction ></a>
+            </div>
+        </div>
+        <div class="row mx-auto mt-5 mt-0" id="svg_img_section" style="display: none">
+            <div class="col-lg-5 col-md-6 text-center my-auto mx-auto">
+              <div>
+                <p style="color: #FFF; font-size: 25px; padding-bottom: 15px;">Thanks for contributing!</p>
+              </div>
+              <div style="background-color: gray; padding: 1px;">
+                <img id="svg_img"/>
+              </div>
+            </div>
+        </div>
+        <div class="row mx-auto mt-5 mt-0">
+            <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
+              <p style="color: #8e8e8e;">To keep the story together, only one person can mint at a time.</p>
+              <!-- Only show below if they don't hold the minting rights -->
+              <p style="color: #8e8e8e;" id="reserved_counter"></p>
+            </div>
+        </div>
+        <div class="row mx-auto mt-3 mb-5 mt-0">
+            <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
+              <button id="reserve_mint_button" disabled>Reserve Minting For 1 Minute</button>
+            </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/web3@1.2.11/dist/web3.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/web3modal@1.9.0/dist/index.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/evm-chains@0.2.0/dist/umd/index.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/@walletconnect/web3-provider@1.2.1/dist/umd/index.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/fortmatic@2.0.6/dist/fortmatic.js"></script>
+  <script type="text/javascript" src="./js/index.js"></script>
+
+</body>
+</html>
