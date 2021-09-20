@@ -1,5 +1,11 @@
 "use strict";
 
+
+// MINTING CODE
+// When minting, atomic firebase function is passed the code,
+// It sets the reservor address and returns new currentMintingCode
+// The reserver is sent back the new currentMintingCode after they mint
+
 const firebaseConfig = {
   apiKey: "AIzaSyDZcGGW7xXBxOWO-I1WWpkFiA8Y6pCi1Hg",
   authDomain: "storybits-2c8d4.firebaseapp.com",
@@ -27,7 +33,7 @@ let web3Modal
 // Chosen wallet provider given by the dialog window
 let provider;
 
-let contract_address = "0x029e53DA4f4Ae0D558977cA1181C0Ded97d51765"
+let contract_address = "0xd2E78e391EEb86AA23D4fE0c543567f7308ca710"
 
 // Address of the selected account
 let selectedAccount;
@@ -192,9 +198,11 @@ async function fetchText() {
   var ref = firebase.database().ref('nft_words');
   listener = ref.on('value', (snapshot) => {
     document.getElementById("nfts").innerHTML = ""
-
-    // a new NFT was added, so can skip the timer and allow reservations now
-    // timeLeft = 0;
+    
+    var num_total = snapshot.numChildren()
+    var percentage = num_total * 100 / 50000
+    var percentString = percentage.toString() + "% written (" + num_total + "/50,000 minted)"
+    document.getElementById("percent_written").innerHTML = percentString
 
     snapshot.forEach(nft => {
       const id = nft.key
@@ -207,11 +215,13 @@ async function fetchText() {
 async function fetchTextWithIds() {
   var ref = firebase.database().ref('nft_words');
   listener = ref.on('value', (snapshot) => {
-
-    // a new NFT was added, so can skip the timer and allow reservations now
-    // timeLeft = 0;
-
     document.getElementById("nfts").innerHTML = ""
+
+    var num_total = snapshot.numChildren()
+    var percentage = num_total * 100 / 50000
+    var percentString = percentage.toString() + "% written (" + num_total + "/50,000 minted)"
+    document.getElementById("percent_written").innerHTML = percentString
+
     snapshot.forEach(nft => {
       const id = nft.key
       const word = nft.val()
@@ -219,6 +229,8 @@ async function fetchTextWithIds() {
     })
   });
 }
+
+// percent_written
 
 async function toggleIds() {
   firebase.database().ref('nft_words').off('value', listener)
@@ -236,7 +248,7 @@ async function toggleIds() {
   }
 }
 
-var charge = 0.00008;
+var charge = 0.01;
 var words = []
 function textChanged() {
   var text = document.getElementById("nft_sentence_textarea").value;
@@ -245,22 +257,26 @@ function textChanged() {
     words.splice(-1)
   }
   // 0.00008
-  charge = (words.length * 0.00008).toFixed(8);
+  charge = parseFloat((words.length * 0.01).toFixed(8));
   if (words.length == 0) {
-    charge = 0.00008
+    charge = 0.01
   }
   if (words.length <= 1) {
-    document.getElementById("nft_sentence_button").innerHTML = "Mint StoryBit 0.08 ETH"
+    document.getElementById("nft_sentence_button").innerHTML = "Mint StoryBit 0.01 ETH"
   }
   else {
     document.getElementById("nft_sentence_button").innerHTML = "Mint " + words.length.toString() + " StoryBits " + charge.toString() + " ETH"
   }
 }
 
-var minted = false
-// var tokenURIs = []
 var currentTokenIndex = 0
 async function mint() {
+  document.getElementById("opensea_link_section").style.display = "none";
+  document.getElementById("nft_minting_section").style.display = "none"
+  document.getElementById("nft_minting_wait").style.display = "none";
+  document.getElementById("transacation_link").style.display = "none";
+  document.getElementById("svg_img_section").style.display = "none";
+
   if (words.length == 0) {
     return;
   }
@@ -286,11 +302,26 @@ async function mint() {
 
   console.log(ethaddress);
 
+  var url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintFromTimeout?address=" + accounts[0]
+  if (timeLeft > 0) {
+    var code = document.getElementById("enter_code").value;
+    if (code != "") {
+      // mint with requestMintFromCode
+      url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintFromCode?address=" + accounts[0] + "&code=" + code
+    }
+    else {
+      // can't mint without code so don't send request
+      return
+    }
+  }
+
+  // HOW TO DO PADDING FOR TIMELEFT
+
   // send request to firebase function with timestamp, signature. Edit: just address and disable read from database
   // except for http cloud function that tells the number of people in queue.
   // hash the timestamp in the server.
   // firebase will send back signed message
-  var url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMint?address=" + accounts[0]
+  
   var xmlHttp = new XMLHttpRequest();
   xmlHttp.onreadystatechange = function() { 
     if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
@@ -305,11 +336,20 @@ async function mint() {
       let r = data.r;
       let s = data.s;
       let v = data.v;
+      let code = data.new_code;
+
+      console.log(words)
+      console.log(timestampMsg)
+      console.log(v)
+      console.log(r)
+      console.log(s)
 
       // call mint function with above
       var totalAmountWei = web3.utils.toWei(charge.toString(), "ether")
 
-      var contract = new web3.eth.Contract([{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"approved","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"operator","type":"address"},{"indexed":false,"internalType":"bool","name":"approved","type":"bool"}],"name":"ApprovalForAll","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":true,"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"approve","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"flipSaleState","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string[]","name":"_words","type":"string[]"},{"internalType":"uint256","name":"timestampMsg","type":"uint256"},{"internalType":"uint8","name":"v","type":"uint8"},{"internalType":"bytes32","name":"r","type":"bytes32"},{"internalType":"bytes32","name":"s","type":"bytes32"}],"name":"safeMint","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"bytes","name":"_data","type":"bytes"}],"name":"safeTransferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"operator","type":"address"},{"internalType":"bool","name":"approved","type":"bool"}],"name":"setApprovalForAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferFrom","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"internalType":"address","name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"getApproved","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"operator","type":"address"}],"name":"isApprovedForAll","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"maxNfts","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"price","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"saleIsActive","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"tokensMinted","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_tokenId","type":"uint256"}],"name":"tokenURI","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"words","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}], 
+      console.log(totalAmountWei)
+
+      var contract = new web3.eth.Contract([ { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "approved", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "Approval", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "operator", "type": "address" }, { "indexed": false, "internalType": "bool", "name": "approved", "type": "bool" } ], "name": "ApprovalForAll", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "previousOwner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "OwnershipTransferred", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "from", "type": "address" }, { "indexed": true, "internalType": "address", "name": "to", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "Transfer", "type": "event" }, { "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "approve", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "flipSaleState", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "renounceOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "string[]", "name": "_words", "type": "string[]" }, { "internalType": "uint256", "name": "timestampMsg", "type": "uint256" }, { "internalType": "uint8", "name": "v", "type": "uint8" }, { "internalType": "bytes32", "name": "r", "type": "bytes32" }, { "internalType": "bytes32", "name": "s", "type": "bytes32" } ], "name": "safeMint", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "bytes", "name": "_data", "type": "bytes" } ], "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "operator", "type": "address" }, { "internalType": "bool", "name": "approved", "type": "bool" } ], "name": "setApprovalForAll", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "transferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "transferOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" }, { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ], "name": "balanceOf", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "getApproved", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "operator", "type": "address" } ], "name": "isApprovedForAll", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "maxNfts", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "name", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "owner", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "ownerOf", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "price", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "saleIsActive", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" } ], "name": "supportsInterface", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "symbol", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "tokensMinted", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "_tokenId", "type": "uint256" } ], "name": "tokenURI", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "name": "words", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" } ], 
         contract_address);
       var safeMint = contract.methods.safeMint(words, timestampMsg, v, r, s).encodeABI();
 
@@ -323,22 +363,25 @@ async function mint() {
           console.log("hash")
           console.log(hash);
           document.getElementById("nft_sentence_button").disabled = true;
-          minted = true;
-          // **** TODO ****
-          // Maybe put link to etherscan
-          // show some sort of label saying that the transacation is loading
-          // remove that when get the reciept
           document.getElementById("nft_minting_section").style.display = "block"
           document.getElementById("nft_minting_wait").style.display = "block";
           document.getElementById("transacation_link").href = "https://rinkeby.etherscan.io/tx/" + hash
           document.getElementById("transacation_link").style.display = "block";
+
+          var update_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/transactionAccepted"
+          var xmlHttpUpdate = new XMLHttpRequest();
+          xmlHttpUpdate.onreadystatechange = function() {
+            if (xmlHttpUpdate.readyState == 4 && xmlHttpUpdate.status == 200){
+              console.log(xmlHttpUpdate.responseText);
+            }
+          }
+          xmlHttpUpdate.open("GET", update_url, true);
+          xmlHttpUpdate.send(null);
         })
         .on('receipt', function(receipt){ // transacation was successful
-          setTimeout(function(){ 
-            // **** TODO ****
-            // Query the contract to get the tokenURI. Extract svg from that can create Image for them to save
-            // Hide image once they click the reserve button
+          setTimeout(function(){
             document.getElementById("nft_minting_wait").style.display = "none";
+            document.getElementById("show_code").innerHTML = "Give the next person mint access with this code <br/>(expires after 20 minutes): <br/><strong>" + code + "</strong>";
 
             const currentTokensMinted = contract.methods.tokensMinted().call().then(function(numCurrentTokensMinted) { 
               // request the backend to update. pass it the previous number of tokens and the current number.
@@ -376,12 +419,19 @@ async function mint() {
                   console.log("Couldn't get Token's URI")
                 });
 
+                document.getElementById("opensea_link").href = "https://testnets.opensea.io/assets/" + contract_address + "/" + numCurrent.toString()
+                document.getElementById("opensea_link_section").style.display = "block";
+
             }, function(error) {
               console.log("Couldn't get current Token Ids")
             });
           }, 2000);
         })
-        .on('error', console.error); // If a out of gas error, the second parameter is the receipt.
+        .on('error', function(error, receipt) {
+          console.log("error");
+          // User rejected transaction
+
+        });
       }, function(error) {
         console.log("Couldn't get previous Token Ids")
       });
@@ -405,60 +455,8 @@ function setNFTImage(data) {
   document.getElementById("svg_img").src = url;
 }
 
-var grantedMintingTimestamp = 0
 var timeLeft = 0
 var reservedTimstamp = 0
-
-async function reserveMintingRights() {
-  if (ethaddress == "") {
-      await web3Modal.clearCachedProvider()
-      console.log("Opening a dialog", web3Modal);
-      try {
-        provider = await web3Modal.connect();
-
-        const web3 = new Web3(provider);
-        const accounts = await web3.eth.getAccounts();
-        if (accounts !== null) {
-          console.log(accounts[0])
-        }
-      } catch(e) {
-        console.log("Could not get a wallet connection", e);
-        return;
-      }
-
-      const web3 = new Web3(provider);
-      console.log("Web3 instance is", web3);
-      const accounts = await web3.eth.getAccounts();
-      ethaddress = accounts[0];
-  }
-
-  document.getElementById("nft_minting_section").style.display = "none"
-  document.getElementById("nft_minting_wait").style.display = "none";
-  document.getElementById("transacation_link").style.display = "none";
-
-  // tokenURIs = []
-  // document.getElementById("prev_img_button").style.display = "none";
-  // document.getElementById("next_img_button").style.display = "none";
-  // document.getElementById("svg_img").style.display = "none";
-  document.getElementById("svg_img_section").style.display = "none";
-
-  var queue_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintReservation?address=" + ethaddress
-  var xmlHttp = new XMLHttpRequest();
-  xmlHttp.onreadystatechange = function() {
-    if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
-      const data = JSON.parse(xmlHttp.responseText);
-      if (data.status == "success") {
-        grantedMintingTimestamp = data.reserved_timestamp;
-        setCookie('grantedMintingTimestamp',grantedMintingTimestamp,1);
-      }
-      else {
-        alert("Sorry, someone else reserved minting before you.");
-      }
-    }
-  }
-  xmlHttp.open("GET", queue_url, true);
-  xmlHttp.send(null);
-}
 
 async function listenForMintReservation() {
   var ref = firebase.database().ref('reservationTimestamp');
@@ -469,46 +467,50 @@ async function listenForMintReservation() {
     // Once have reservation, mint button is enabled.
     const currentTimestamp = Math.round(Date.now() / 1000);
     reservedTimstamp = snapshot.val()
-    timeLeft = reservedTimstamp + 300 - currentTimestamp
+    timeLeft = reservedTimstamp - currentTimestamp;
+    // timeLeft = reservedTimstamp + 300 - currentTimestamp
   });
 }
 
 function updateTimeLeft() {
+  var ref = firebase.database().ref('reservationTimestamp');
+  ref.once('value', (snapshot) => {
+    // update the label with the new reservation timestamp
+    // have another function that continuously counts that down until no one is minting
+    // and the reserve button is enabled.
+    // Once have reservation, mint button is enabled.
+    const currentTimestamp = Math.round(Date.now() / 1000);
+    reservedTimstamp = snapshot.val()
+    timeLeft = reservedTimstamp - currentTimestamp;
+    // timeLeft = reservedTimstamp + 300 - currentTimestamp
+  });
+}
+
+function updateMintInfo() {
   timeLeft -= 1
-  if (grantedMintingTimestamp == reservedTimstamp) {
-    var timeLeftToMint = timeLeft - 240;
-    if (timeLeftToMint > 0) {
-      document.getElementById("reserve_mint_button").disabled = true;
-      document.getElementById("reserved_counter").style.display = "block";
-      document.getElementById("reserved_counter").innerHTML = "You have " + timeLeftToMint + " seconds left to start the mint."
-      if (minted == false) {
-        document.getElementById("nft_sentence_button").disabled = false;
-      }
-    }
-    else if(timeLeft > 0) {
-      document.getElementById("reserve_mint_button").disabled = true;
-      document.getElementById("reserved_counter").style.display = "block";
-      document.getElementById("reserved_counter").innerHTML = "New minting slot available in " + timeLeft + " seconds (or sooner)"
+  if (timeLeft > 60 * 2) {
+    document.getElementById("reserved_counter").innerHTML = "Minting code expires in: " + timeLeft + " seconds";
+    document.getElementById("minting_code_section").style.display = "block";
+
+    // check to see if minting code is entered
+    var code = document.getElementById("enter_code").value;
+    if (code == "") {
       document.getElementById("nft_sentence_button").disabled = true;
     }
     else {
-      minted = false
-      document.getElementById("reserved_counter").innerHTML = ""
-      document.getElementById("reserve_mint_button").disabled = false;
+      document.getElementById("nft_sentence_button").disabled = false;
     }
   }
-  else {
+  else if (timeLeft > 0) {
+    // disable both types of minting as a padding.
+    document.getElementById("minting_code_section").style.display = "none";
     document.getElementById("nft_sentence_button").disabled = true;
-    if (timeLeft > 0) {
-      document.getElementById("reserve_mint_button").disabled = true;
-      document.getElementById("reserved_counter").style.display = "block";
-      document.getElementById("reserved_counter").innerHTML = "New minting slot available in " + timeLeft + " seconds (or sooner)"
-    }
-    else {
-      minted = false // newly added, unsure
-      document.getElementById("reserved_counter").innerHTML = ""
-      document.getElementById("reserve_mint_button").disabled = false;
-    }
+    document.getElementById("reserved_counter").innerHTML = "Minting code expires in: " + timeLeft + " seconds";
+  }
+  else {
+    document.getElementById("reserved_counter").innerHTML = "Minting Available!";
+    document.getElementById("minting_code_section").style.display = "none";
+    document.getElementById("nft_sentence_button").disabled = false;
   }
 }
 
@@ -546,16 +548,16 @@ window.addEventListener('load', async () => {
   init();
   listenForMintReservation()
   setInterval(function(){
-    updateTimeLeft()
+    updateMintInfo()
   }, 1000);
 
-  grantedMintingTimestamp = getCookie('grantedMintingTimestamp');
+  setInterval(function(){
+    updateTimeLeft()
+  }, 10000);
 
-  // document.querySelector("#connect").addEventListener("click", onConnect);
-  // document.querySelector("#disconnect").addEventListener("click", onDisconnect);
   document.querySelector("#toggleIds").addEventListener("click", toggleIds);
   document.querySelector("#nft_sentence_button").addEventListener("click", mint);
-  document.querySelector("#reserve_mint_button").addEventListener("click", reserveMintingRights);
+  // document.querySelector("#reserve_mint_button").addEventListener("click", reserveMintingRights);
   // document.querySelector("#prev_img_button").addEventListener("click", viewNextImage);
   // document.querySelector("#next_img_button").addEventListener("click", viewPrevImage);
 });

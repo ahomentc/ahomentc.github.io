@@ -343,6 +343,21 @@ header.masthead h1 {
   box-shadow: 0px 0px 10px 1px rgb(40,40,40);
 }
 
+#enter_code {
+  padding: 10px 15px 10px 15px;
+  border-radius: 10px;
+  border-width: 1;
+  border-style: solid;
+  width: 100%;
+  background-color: black;
+  border-color: gray;
+  color: white;
+}
+
+#enter_code:focus {
+  outline: 0;
+}
+
 #reserve_mint_button {
   border-radius: 15px;
   padding: 15px 20px 15px 20px;
@@ -370,6 +385,46 @@ header.masthead h1 {
 
 #toggleIds:focus {
   outline:0;
+}
+
+#prompt_background {
+  background-color: rgb(30,30,30);
+  border-radius: 20px;
+  padding: 20px 20px 25px 20px;
+}
+
+.prompt {
+  font-size: 14px;
+  color: white;
+  padding-top: 5px;
+}
+
+@media (min-width: 768px) {
+  .prompt {
+    font-size: 16px;
+  }
+}
+
+#story_details {
+  font-size: 16px;
+  color: white;
+}
+
+@media (min-width: 768px) {
+  #story_details {
+    font-size: 20px;
+  }
+}
+
+#proj_desc {
+  font-size: 14px;
+  color: #8e8e8e;
+}
+
+@media (min-width: 768px) {
+  #proj_desc {
+    font-size: 18px;
+  }
 }
 
 .btn-primary, .btn-primary:hover, .btn-primary:active, .btn-primary:visited {

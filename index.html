@@ -37,8 +37,7 @@
   <!-- Custom styles for this template -->
   <link href="css/landing-page.css" rel="stylesheet">
 </head>
-<body>  
-
+<body>
   <div class="row mx-auto" style="background-color: rgba(0, 0, 0, 0); height: 9%;">
     <div class="col-lg-12 text-center brand-logo mx-auto my-auto" >
       <p style="font-size: 35px;">StoryBits</p>
@@ -48,16 +47,29 @@
       <a class="social_link" target="_blank" href="https://testnets.opensea.io/collection/teststorybitsthree">OpenSea</a>
       <a class="social_link" target="_blank" href="https://discord.gg/5Uyxxv2tfR">Discord</a>
     </div>
-    <div class="col-lg-5 col-md-8 col-sm-10 text-center mx-auto my-auto" style="padding-top: 15px;">
-      <p style="font-size: 18px; color: #8e8e8e;">The first story being created by NFTs. Each word is held on-chain in an NFT. Anybody can mint one of 10k StoryBits to keep the story going!</p>
+    <div class="col-lg-4 col-md-8 col-sm-10 text-center mx-auto my-auto" style="padding-top: 15px;">
+      <p id="proj_desc">The first story being created by NFTs. Each word is held on-chain in an NFT. Anybody can mint one of 50k StoryBits to keep the story going!</p>
     </div>
-    
   </div>
 
   <main class="scroll-container">
 
+    <section style="padding-top: 40px;">
+      <div class="col-lg-6 col-md-8 col-sm-10 text-center mx-auto my-auto" id="prompt_background">
+<!--         <p id="prompt">Story Prompt:<br/>An NFT historian in 2031 buys an experimental Brain-Computer Interface VR headset, which is directly connected to and controlled by Ethereum. While interacting with a malicious scavenger hunt Smart Contract he finds himself stuck, unable to disconnect from the headset. His only escape is to solve the scavenger hunt by finding a specific NFT minted in the early 2020s. His journey will take him through the history of early NFTs, some which took the world by storm, some of which were long forgotten.</p> -->
+          <p id="story_details">Story Details:</p>
+          <p style="text-align: left;" class="prompt">~ The year is 2051 and the world has moved to Ethereum and Virtual Reality.</p>
+          <p style="text-align: left;" class="prompt">~ NFTs give abilities in the virtual world. They've become the center of culture and work.</p>
+          <!-- <p style="text-align: left;" class="prompt">~ Satoshi Nakamoto reappears with a cryptic message: <strong>4 NFTs, combined, hold my keys. 1 punk, 1 ape, 1 loot, 1 cat.</strong></p> -->
+          <p style="text-align: left;" class="prompt">~ Satoshi Nakamoto reappears with a cryptic message: <strong>Find my keys, with 4 NFTs. 1 punk, 1 ape, 1 loot, 1 cat.</strong></p>
+          <p style="text-align: left;" class="prompt">~ A early 2020s NFT researcher sees this and embarks on a quest to find them.</p>
+          <p style="text-align: left;" class="prompt">~ His journey will take him through the different NFT virtual words that exist in 2051 as well as the history of early NFTs.</p>
+        </p>
+      </div>
+    </section>
+
     <section>
-      <div class="col-lg-6 h-100 text-center mx-auto my-auto" style="padding-top: 40px;">
+      <div class="col-lg-6 h-100 text-center mx-auto my-auto" style="padding-top: 20px;">
         <button id="toggleIds">Switch To Reader View</button>
       </div>
     </section>
@@ -72,41 +84,56 @@
       <div class="container">
         <div class="row mx-auto mb-2 mt-0">
             <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
-              <TEXTAREA maxlength="250" placeholder="Continue the story..." id="nft_sentence_textarea"></TEXTAREA>
+              <TEXTAREA placeholder="Continue the story..." id="nft_sentence_textarea"></TEXTAREA>
             </div>
         </div>
-        <div class="row mx-auto mb-0 mt-0">
+        
+        <div class="row mx-auto mt-4 mt-0">
+            <div class="col-lg-7 col-md-6 text-center my-auto mx-auto">
+              <p style="color: #8e8e8e;">To keep the story together, only 1 person can mint at a time. Get the current minting access code from the last person to mint or wait for it to expire.</p>
+              <p style="color: #8e8e8e;" id="reserved_counter"></p>
+              
+            </div>
+        </div>
+        <div class="row mx-auto mt-3 mb-2 mt-0" id="minting_code_section" style="display: none">
+            <div class="col-lg-4 col-md-5 text-center my-auto mx-auto">
+              <input placeholder="Enter Current Minting Code" id="enter_code"></input>
+            </div>
+        </div>
+        <div class="row mx-auto mt-4 mb-5 mt-0">
             <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
-              <button id="nft_sentence_button" disabled >Mint StoryBit 0.08 ETH</button>
+              <!-- Need to modify in contract too -->
+              <button id="nft_sentence_button" disabled >Mint StoryBit 0.01 ETH</button>
             </div>
         </div>
-        <div class="row mx-auto mt-4 mt-0" id="nft_minting_section" style="display: none">
-            <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
-              <p style="color: #FFF; display: none;" id="nft_minting_wait">Your NFT is minting, please wait...</p>
-              <a style="color: #FFF; display: none;" id="transacation_link" href="" target="_blank">View Transaction ></a>
-            </div>
-        </div>
-        <div class="row mx-auto mt-5 mt-0" id="svg_img_section" style="display: none">
+        <div class="row mx-auto mt-4 mb-5" id="svg_img_section" style="display: none">
             <div class="col-lg-5 col-md-6 text-center my-auto mx-auto">
               <div>
-                <p style="color: #FFF; font-size: 25px; padding-bottom: 15px;">Thanks for contributing!</p>
+                <p style="color: #FFF; font-size: 25px; padding-bottom: 10px;">Thanks for contributing!</p>
+              </div>
+              <div>
+                <p style="color: #FFF; font-size: 18px; padding-bottom: 20px;" id="show_code"></p>
               </div>
               <div style="background-color: gray; padding: 1px;">
                 <img id="svg_img"/>
               </div>
             </div>
         </div>
-        <div class="row mx-auto mt-5 mt-0">
+        <div class="row mx-auto mt-0 mb-4" id="opensea_link_section" style="display: none">
             <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
-              <p style="color: #8e8e8e;">To keep the story together, only one person can mint at a time.</p>
-              <!-- Only show below if they don't hold the minting rights -->
-              <p style="color: #8e8e8e;" id="reserved_counter"></p>
+              <a style="color: #FFF;" id="opensea_link" href="" target="_blank">View On Opensea ></a>
             </div>
         </div>
-        <div class="row mx-auto mt-3 mb-5 mt-0">
+        <div class="row mx-auto mt-0 mb-4" id="nft_minting_section" style="display: none">
             <div class="col-lg-6 col-md-6 text-center my-auto mx-auto">
-              <button id="reserve_mint_button" disabled>Reserve Minting For 1 Minute</button>
+              <p style="color: #FFF; display: none;" id="nft_minting_wait">Your NFT is minting, please wait...</p>
+              <a style="color: #FFF; display: none;" id="transacation_link" href="" target="_blank">View Transaction ></a>
             </div>
+        </div>
+        <div class="row mx-auto mb-5 mt-0">
+          <div class="col-lg-5 col-md-6 text-center my-auto mx-auto">
+            <p id="percent_written"></p>
+          </div>
         </div>
       </div>
     </section>
