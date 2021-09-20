@@ -131,7 +131,7 @@ exports.requestMintFromCode = functions.https.onRequest( (req, res) => {
 		var web3 = new Web3("https://rinkeby.infura.io/v3/fee8c943351648ac819a52f3ee66bfbc")
 		const address = req.query.address;
 		const code = req.query.code;
-		const reseration_hold_time = 60 * 20; // 20 minutes
+		const reseration_hold_time = 60 * 60; // 60 minutes
 		const currentTimestamp = Math.round(Date.now() / 1000);
 
 		var coeff = 1000 * 60 * 1; // round to nearest minute
@@ -186,7 +186,7 @@ exports.requestMintFromTimeout = functions.https.onRequest( (req, res) => {
 	cors(req, res, () => {
 		var web3 = new Web3("https://rinkeby.infura.io/v3/fee8c943351648ac819a52f3ee66bfbc")
 		const address = req.query.address;
-		const reseration_hold_time = 60 * 20; // 20 minutes
+		const reseration_hold_time = 60 * 60; // 60 minutes
 		const currentTimestamp = Math.round(Date.now() / 1000);
 
 		var coeff = 1000 * 60 * 1; // round to nearest minute

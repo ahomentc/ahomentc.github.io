@@ -489,7 +489,8 @@ function updateTimeLeft() {
 function updateMintInfo() {
   timeLeft -= 1
   if (timeLeft > 60 * 2) {
-    document.getElementById("reserved_counter").innerHTML = "Minting code expires in: " + timeLeft + " seconds";
+    var minutes = Math.ceil(timeLeft / 60)
+    document.getElementById("reserved_counter").innerHTML = "Minting code expires in: " + minutes + " minutes";
     document.getElementById("minting_code_section").style.display = "block";
 
     // check to see if minting code is entered
