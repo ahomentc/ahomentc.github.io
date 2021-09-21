@@ -460,8 +460,9 @@ function updateMintInfo() {
       document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + minutes + " minutes";
     }
     else {
-      var hours = Math.ceil(timeLeft / 60 / 60)
-      document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + hours + " hours";
+      var hours = Math.floor(timeLeft / 60 / 60)
+      minutes = Math.ceil(minutes % 60)
+      document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + hours + " hours " + minutes + " minutes";
     }
     document.getElementById("minting_code_section").style.display = "block";
 
