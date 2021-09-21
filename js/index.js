@@ -179,7 +179,7 @@ var DispatchGroup = (function() {
 })()
 
 function addNFTWithId(id, word){
-    var html = '<a href="https://testnets.opensea.io/assets/0x029e53da4f4ae0d558977ca1181c0ded97d51765/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
+    var html = '<a href="https://testnets.opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
     html += '<div class="nft text-center my-auto mx-auto">'
     html += '<div class="" style="padding-top: 0px;"><p><div style="float:left; padding-right: 5px; color: gray;">' + id.toString() + ": </div><div style='float:left;'>" + word + '</div></p></div>'
     html += '</div></div></a>'
@@ -187,7 +187,7 @@ function addNFTWithId(id, word){
 }
 
 function addNFTReadable(id, word){
-    var html = '<a href="https://testnets.opensea.io/assets/0x029e53da4f4ae0d558977ca1181c0ded97d51765/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
+    var html = '<a href="https://testnets.opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
     html += '<div class="nft_plain text-center my-auto mx-auto">'
     html += '<div class="" style="padding-top: 0px;"><p>' + word + '</a></p></div>'
     html += '</div></div></a>'
