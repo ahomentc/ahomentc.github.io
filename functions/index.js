@@ -165,8 +165,8 @@ exports.requestMintFromCode = functions.https.onRequest( (req, res) => {
 				var nextTimestamp = currentTimestamp + reseration_hold_time;
 				admin.database().ref('currentMintingCodeTemp').set(new_code);
 				admin.database().ref('reservationTimestampTemp').set(nextTimestamp);
-				var onHoldTimestamp = currentTimestamp + 180
-				admin.database().ref('reservationTimestamp').set(onHoldTimestamp);
+				// var onHoldTimestamp = currentTimestamp + 180
+				// admin.database().ref('reservationTimestamp').set(onHoldTimestamp);
 				res.send(JSON.stringify(obj));
 				return;
 		    }
@@ -218,8 +218,8 @@ exports.requestMintFromTimeout = functions.https.onRequest( (req, res) => {
 
 				// // if the transacation is accepted, then reservationTimestamp goes back to 20 minutes
 				// // Otherwise it stays at 180 seconds so that someone else can mint
-				// var onHoldTimestamp = currentTimestamp + 180
-				// admin.database().ref('reservationTimestamp').set(onHoldTimestamp);
+				var onHoldTimestamp = currentTimestamp + 120
+				admin.database().ref('reservationTimestamp').set(onHoldTimestamp);
 				res.send(JSON.stringify(obj));
 				return;
 			}
@@ -231,6 +231,9 @@ exports.requestMintFromTimeout = functions.https.onRequest( (req, res) => {
 		})
 	});
 });
+
+// what about race condition for minting code expired?
+// what if minting code expired, transaction fail since gas too high, then try again?
 
 // transaction was accepted so set reservationTimestamp and currentMintingCode
 exports.transactionAccepted = functions.https.onRequest( (req, res) => {
