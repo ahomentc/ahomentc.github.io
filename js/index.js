@@ -33,7 +33,7 @@ let web3Modal
 // Chosen wallet provider given by the dialog window
 let provider;
 
-let contract_address = "0xd2E78e391EEb86AA23D4fE0c543567f7308ca710"
+let contract_address = "0x7aA7d28eB17d3555cE8d0974F9006Fe670F53e1e"
 
 // Address of the selected account
 let selectedAccount;
@@ -179,7 +179,7 @@ var DispatchGroup = (function() {
 })()
 
 function addNFTWithId(id, word){
-    var html = '<a href="https://testnets.opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
+    var html = '<a href="https://opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
     html += '<div class="nft text-center my-auto mx-auto">'
     html += '<div class="" style="padding-top: 0px;"><p><div style="float:left; padding-right: 5px; color: gray;">' + id.toString() + ": </div><div style='float:left;'>" + word + '</div></p></div>'
     html += '</div></div></a>'
@@ -187,7 +187,7 @@ function addNFTWithId(id, word){
 }
 
 function addNFTReadable(id, word){
-    var html = '<a href="https://testnets.opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
+    var html = '<a href="https://opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
     html += '<div class="nft_plain text-center my-auto mx-auto">'
     html += '<div class="" style="padding-top: 0px;"><p>' + word + '</a></p></div>'
     html += '</div></div></a>'
@@ -356,8 +356,8 @@ async function mint() {
       // get the previous number of nfts minted
       const prevTokensMinted = contract.methods.tokensMinted().call().then(function(numPrevTokensMinted) { 
         // var numPrev = parseInt(numPrevTokensMinted)
-        // Chain ID of Rinkeby Test Net is 4, replace it to 1 for Main Net
-        var chainId = 3;
+        // Chain ID of Rinkeby Test Net is 3, replace it to 1 for Main Net
+        var chainId = 1;
         web3.eth.sendTransaction({to:contract_address, from:ethaddress, value: totalAmountWei, data: safeMint, "chainId": chainId})
         .on('transactionHash', function(hash){
           console.log("hash")
@@ -365,7 +365,7 @@ async function mint() {
           document.getElementById("nft_sentence_button").disabled = true;
           document.getElementById("nft_minting_section").style.display = "block"
           document.getElementById("nft_minting_wait").style.display = "block";
-          document.getElementById("transacation_link").href = "https://rinkeby.etherscan.io/tx/" + hash
+          document.getElementById("transacation_link").href = "https://etherscan.io/tx/" + hash
           document.getElementById("transacation_link").style.display = "block";
 
           var update_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/transactionAccepted"
@@ -404,7 +404,7 @@ async function mint() {
                   var idString = id.toString()
                   setTimeout(function timer() {
                     const options = {method: 'GET'};
-                    fetch('https://testnets-api.opensea.io/api/v1/asset/' + contract_address + '/' + idString + '/?force_update=true', options)
+                    fetch('https://api.opensea.io/api/v1/asset/' + contract_address + '/' + idString + '/?force_update=true', options)
                     .then(response => response.json())
                     .then(response => console.log(response))
                     .catch(err => console.error(err));
@@ -419,7 +419,7 @@ async function mint() {
                   console.log("Couldn't get Token's URI")
                 });
 
-                document.getElementById("opensea_link").href = "https://testnets.opensea.io/assets/" + contract_address + "/" + numCurrent.toString()
+                document.getElementById("opensea_link").href = "https://opensea.io/assets/" + contract_address + "/" + numCurrent.toString()
                 document.getElementById("opensea_link_section").style.display = "block";
 
             }, function(error) {
