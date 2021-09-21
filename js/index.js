@@ -340,7 +340,7 @@ async function mint() {
           .on('receipt', function(receipt){ // transacation was successful
             setTimeout(function(){
               document.getElementById("nft_minting_wait").style.display = "none";
-              document.getElementById("show_code").innerHTML = "Give the next person mint access with this code <br/>(expires after 60 minutes): <br/><strong>" + code + "</strong>";
+              document.getElementById("show_code").innerHTML = "Give the next person mint access with this code <br/>(expires after 2 hours): <br/><strong>" + code + "</strong>";
 
               const currentTokensMinted = contract.methods.tokensMinted().call().then(function(numCurrentTokensMinted) { 
                 // request the backend to update. pass it the previous number of tokens and the current number.
