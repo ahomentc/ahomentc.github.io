@@ -52,8 +52,8 @@ async function init() {
     fortmatic: {
       package: Fortmatic,
       options: {
-        key: "pk_test_C99A517CE7B79A76"
-        // key: "pk_live_A4C2D41D64B917E8"
+        // key: "pk_test_C99A517CE7B79A76"
+        key: "pk_live_A4C2D41D64B917E8"
       }
     }
   };
@@ -90,50 +90,6 @@ async function init() {
 var addedNFTs = new Set()
 var showingIds = true;
 var listener;
-
-// function addNFTWithId(id, word){
-//   if (!addedNFTs.has(id)) {
-//     addedNFTs.add(id);
-//     var html = '<a href="https://testnets.opensea.io/assets/0x029e53da4f4ae0d558977ca1181c0ded97d51765/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
-//     html += '<div class="nft text-center my-auto mx-auto">'
-//     html += '<div class="" style="padding-top: 0px;"><p><div style="float:left; padding-right: 5px; color: gray;">' + id.toString() + ": </div>" + word + '</p></div>'
-//     html += '</div></div></a>'
-//     document.getElementById("nfts").innerHTML += html
-//   }
-// }
-
-// function addNFTReadable(id, word){
-//   if (!addedNFTs.has(id)) {
-//     addedNFTs.add(id);
-//     var html = '<a href="https://testnets.opensea.io/assets/0x029e53da4f4ae0d558977ca1181c0ded97d51765/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
-//     html += '<div class="nft_plain text-center my-auto mx-auto">'
-//     html += '<div class="" style="padding-top: 0px;"><p>' + word + '</a></p></div>'
-//     html += '</div></div></a>'
-//     document.getElementById("nfts").innerHTML += html
-//   }
-// }
-
-// async function fetchText() {
-//   var ref = firebase.database().ref('nft_words');
-//   listener = ref.on('value', (snapshot) => {
-//     snapshot.forEach(nft => {
-//       const id = nft.key
-//       const word = nft.val()
-//       addNFTReadable(id, word)  
-//     })
-//   });
-// }
-
-// async function fetchTextWithIds() {
-//   var ref = firebase.database().ref('nft_words');
-//   listener = ref.on('value', (snapshot) => {
-//     snapshot.forEach(nft => {
-//       const id = nft.key
-//       const word = nft.val()
-//       addNFTWithId(id, word)
-//     })
-//   });
-// }
 
 var DispatchGroup = (function() {
     var nextId = 0
