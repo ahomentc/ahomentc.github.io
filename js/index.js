@@ -33,8 +33,8 @@ let web3Modal
 // Chosen wallet provider given by the dialog window
 let provider;
 
-// let contract_address = "0x7aA7d28eB17d3555cE8d0974F9006Fe670F53e1e"
-let contract_address = "0xd2E78e391EEb86AA23D4fE0c543567f7308ca710"
+let contract_address = "0x7aA7d28eB17d3555cE8d0974F9006Fe670F53e1e"
+// let contract_address = "0xd2E78e391EEb86AA23D4fE0c543567f7308ca710" // rinkeby
 
 // Address of the selected account
 let selectedAccount;
@@ -136,7 +136,7 @@ var DispatchGroup = (function() {
 })()
 
 function addNFTWithId(id, word){
-    var html = '<a href="https://testnets.opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
+    var html = '<a href="https://opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
     html += '<div class="nft text-center my-auto mx-auto">'
     html += '<div class="" style="padding-top: 0px;"><p><div style="float:left; padding-right: 5px; color: gray;">' + id.toString() + ": </div><div style='float:left;'>" + word + '</div></p></div>'
     html += '</div></div></a>'
@@ -144,7 +144,7 @@ function addNFTWithId(id, word){
 }
 
 function addNFTReadable(id, word){
-    var html = '<a href="https://testnets.opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
+    var html = '<a href="https://opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 0px;">'
     html += '<div class="nft_plain text-center my-auto mx-auto">'
     html += '<div class="" style="padding-top: 0px;"><p>' + word + '</a></p></div>'
     html += '</div></div></a>'
@@ -309,15 +309,16 @@ async function mint() {
       var contract = new web3.eth.Contract([ { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "approved", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "Approval", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "owner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "operator", "type": "address" }, { "indexed": false, "internalType": "bool", "name": "approved", "type": "bool" } ], "name": "ApprovalForAll", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "previousOwner", "type": "address" }, { "indexed": true, "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "OwnershipTransferred", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": true, "internalType": "address", "name": "from", "type": "address" }, { "indexed": true, "internalType": "address", "name": "to", "type": "address" }, { "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "Transfer", "type": "event" }, { "inputs": [ { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "approve", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "flipSaleState", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "renounceOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "string[]", "name": "_words", "type": "string[]" }, { "internalType": "uint256", "name": "timestampMsg", "type": "uint256" }, { "internalType": "uint8", "name": "v", "type": "uint8" }, { "internalType": "bytes32", "name": "r", "type": "bytes32" }, { "internalType": "bytes32", "name": "s", "type": "bytes32" } ], "name": "safeMint", "outputs": [], "stateMutability": "payable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" }, { "internalType": "bytes", "name": "_data", "type": "bytes" } ], "name": "safeTransferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "operator", "type": "address" }, { "internalType": "bool", "name": "approved", "type": "bool" } ], "name": "setApprovalForAll", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "from", "type": "address" }, { "internalType": "address", "name": "to", "type": "address" }, { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "transferFrom", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "newOwner", "type": "address" } ], "name": "transferOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "name": "withdraw", "outputs": [], "stateMutability": "nonpayable", "type": "function" }, { "inputs": [], "stateMutability": "nonpayable", "type": "constructor" }, { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" } ], "name": "balanceOf", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "getApproved", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "address", "name": "owner", "type": "address" }, { "internalType": "address", "name": "operator", "type": "address" } ], "name": "isApprovedForAll", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "maxNfts", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "name", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "owner", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "tokenId", "type": "uint256" } ], "name": "ownerOf", "outputs": [ { "internalType": "address", "name": "", "type": "address" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "price", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "saleIsActive", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" } ], "name": "supportsInterface", "outputs": [ { "internalType": "bool", "name": "", "type": "bool" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "symbol", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [], "name": "tokensMinted", "outputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "_tokenId", "type": "uint256" } ], "name": "tokenURI", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" }, { "inputs": [ { "internalType": "uint256", "name": "", "type": "uint256" } ], "name": "words", "outputs": [ { "internalType": "string", "name": "", "type": "string" } ], "stateMutability": "view", "type": "function" } ], 
         contract_address);
       var safeMint = contract.methods.safeMint(words, timestampMsg, v, r, s).encodeABI();
+      // Chain ID of Rinkeby Test Net is 3, replace it to 1 for Main Net
+      var chainId = 1;
 
-      var est = web3.eth.estimateGas({"to": contract_address, from:ethaddress, "data": safeMint, value: totalAmountWei})
+      var est = web3.eth.estimateGas({"to": contract_address, from:ethaddress, "data": safeMint, value: totalAmountWei, "chainId": chainId})
       console.log(est)
       est.then(function(gasAmount){
         // get the previous number of nfts minted
         const prevTokensMinted = contract.methods.tokensMinted().call().then(function(numPrevTokensMinted) { 
           // var numPrev = parseInt(numPrevTokensMinted)
-          // Chain ID of Rinkeby Test Net is 3, replace it to 1 for Main Net
-          var chainId = 1;
+          
           web3.eth.sendTransaction({to:contract_address, from:ethaddress, value: totalAmountWei, data: safeMint, "chainId": chainId})
           .on('transactionHash', function(hash){
             console.log("hash")
@@ -379,7 +380,7 @@ async function mint() {
                     console.log("Couldn't get Token's URI")
                   });
 
-                  document.getElementById("opensea_link").href = "https://testnets.opensea.io/assets/" + contract_address + "/" + numCurrent.toString()
+                  document.getElementById("opensea_link").href = "https://opensea.io/assets/" + contract_address + "/" + numCurrent.toString()
                   document.getElementById("opensea_link_section").style.display = "block";
 
               }, function(error) {
@@ -455,7 +456,13 @@ function updateMintInfo() {
   timeLeft -= 1
   if (timeLeft > 60 * 2) {
     var minutes = Math.ceil(timeLeft / 60)
-    document.getElementById("reserved_counter").innerHTML = "Minting code expires in: " + minutes + " minutes";
+    if (minutes < 60) {
+      document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + minutes + " minutes";
+    }
+    else {
+      var hours = Math.ceil(timeLeft / 60 / 60)
+      document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + hours + " hours";
+    }
     document.getElementById("minting_code_section").style.display = "block";
 
     // check to see if minting code is entered
@@ -471,7 +478,7 @@ function updateMintInfo() {
     // disable both types of minting as a padding.
     document.getElementById("minting_code_section").style.display = "none";
     document.getElementById("nft_sentence_button").disabled = true;
-    document.getElementById("reserved_counter").innerHTML = "Minting code expires in: " + timeLeft + " seconds";
+    document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + timeLeft + " seconds";
   }
   else {
     document.getElementById("reserved_counter").innerHTML = "Minting Available!";
