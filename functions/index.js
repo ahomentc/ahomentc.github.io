@@ -216,10 +216,10 @@ exports.requestMintFromTimeout = functions.https.onRequest( (req, res) => {
 				admin.database().ref('currentMintingCodeTemp').set(new_code);
 				admin.database().ref('reservationTimestampTemp').set(nextTimestamp);
 
-				// if the transacation is accepted, then reservationTimestamp goes back to 20 minutes
-				// Otherwise it stays at 180 seconds so that someone else can mint
-				var onHoldTimestamp = currentTimestamp + 180
-				admin.database().ref('reservationTimestamp').set(onHoldTimestamp);
+				// // if the transacation is accepted, then reservationTimestamp goes back to 20 minutes
+				// // Otherwise it stays at 180 seconds so that someone else can mint
+				// var onHoldTimestamp = currentTimestamp + 180
+				// admin.database().ref('reservationTimestamp').set(onHoldTimestamp);
 				res.send(JSON.stringify(obj));
 				return;
 			}

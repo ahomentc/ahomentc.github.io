@@ -309,88 +309,96 @@ async function mint() {
         contract_address);
       var safeMint = contract.methods.safeMint(words, timestampMsg, v, r, s).encodeABI();
 
-      // get the previous number of nfts minted
-      const prevTokensMinted = contract.methods.tokensMinted().call().then(function(numPrevTokensMinted) { 
-        // var numPrev = parseInt(numPrevTokensMinted)
-        // Chain ID of Rinkeby Test Net is 3, replace it to 1 for Main Net
-        var chainId = 1;
-        web3.eth.sendTransaction({to:contract_address, from:ethaddress, value: totalAmountWei, data: safeMint, "chainId": chainId})
-        .on('transactionHash', function(hash){
-          console.log("hash")
-          console.log(hash);
-          document.getElementById("nft_sentence_button").disabled = true;
-          document.getElementById("nft_minting_section").style.display = "block"
-          document.getElementById("nft_minting_wait").style.display = "block";
-          document.getElementById("transacation_link").href = "https://etherscan.io/tx/" + hash
-          document.getElementById("transacation_link").style.display = "block";
+      var est = web3.eth.estimateGas({"to": contract_address, from:ethaddress, "data": safeMint, value: totalAmountWei})
+      console.log(est)
+      est.then(function(gasAmount){
+        // get the previous number of nfts minted
+        const prevTokensMinted = contract.methods.tokensMinted().call().then(function(numPrevTokensMinted) { 
+          // var numPrev = parseInt(numPrevTokensMinted)
+          // Chain ID of Rinkeby Test Net is 3, replace it to 1 for Main Net
+          var chainId = 1;
+          web3.eth.sendTransaction({to:contract_address, from:ethaddress, value: totalAmountWei, data: safeMint, "chainId": chainId})
+          .on('transactionHash', function(hash){
+            console.log("hash")
+            console.log(hash);
+            document.getElementById("nft_sentence_button").disabled = true;
+            document.getElementById("nft_minting_section").style.display = "block"
+            document.getElementById("nft_minting_wait").style.display = "block";
+            document.getElementById("transacation_link").href = "https://etherscan.io/tx/" + hash
+            document.getElementById("transacation_link").style.display = "block";
 
-          var update_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/transactionAccepted"
-          var xmlHttpUpdate = new XMLHttpRequest();
-          xmlHttpUpdate.onreadystatechange = function() {
-            if (xmlHttpUpdate.readyState == 4 && xmlHttpUpdate.status == 200){
-              console.log(xmlHttpUpdate.responseText);
+            var update_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/transactionAccepted"
+            var xmlHttpUpdate = new XMLHttpRequest();
+            xmlHttpUpdate.onreadystatechange = function() {
+              if (xmlHttpUpdate.readyState == 4 && xmlHttpUpdate.status == 200){
+                console.log(xmlHttpUpdate.responseText);
+              }
             }
-          }
-          xmlHttpUpdate.open("GET", update_url, true);
-          xmlHttpUpdate.send(null);
-        })
-        .on('receipt', function(receipt){ // transacation was successful
-          setTimeout(function(){
-            document.getElementById("nft_minting_wait").style.display = "none";
-            document.getElementById("show_code").innerHTML = "Give the next person mint access with this code <br/>(expires after 60 minutes): <br/><strong>" + code + "</strong>";
+            xmlHttpUpdate.open("GET", update_url, true);
+            xmlHttpUpdate.send(null);
+          })
+          .on('receipt', function(receipt){ // transacation was successful
+            setTimeout(function(){
+              document.getElementById("nft_minting_wait").style.display = "none";
+              document.getElementById("show_code").innerHTML = "Give the next person mint access with this code <br/>(expires after 60 minutes): <br/><strong>" + code + "</strong>";
 
-            const currentTokensMinted = contract.methods.tokensMinted().call().then(function(numCurrentTokensMinted) { 
-              // request the backend to update. pass it the previous number of tokens and the current number.
-              // It'll retrieve only from those range and update only those those.
-              // If fast enough could honestly just remove the frontend-only update.
-                var update_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestNFTUpdate?prevTokensMinted=" + numPrevTokensMinted + "&numCurrentTokensMinted=" + numCurrentTokensMinted
-                var xmlHttpUpdate = new XMLHttpRequest();
-                xmlHttpUpdate.onreadystatechange = function() {
-                  if (xmlHttpUpdate.readyState == 4 && xmlHttpUpdate.status == 200){
-                    console.log(xmlHttpUpdate.responseText);
+              const currentTokensMinted = contract.methods.tokensMinted().call().then(function(numCurrentTokensMinted) { 
+                // request the backend to update. pass it the previous number of tokens and the current number.
+                // It'll retrieve only from those range and update only those those.
+                // If fast enough could honestly just remove the frontend-only update.
+                  var update_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestNFTUpdate?prevTokensMinted=" + numPrevTokensMinted + "&numCurrentTokensMinted=" + numCurrentTokensMinted
+                  var xmlHttpUpdate = new XMLHttpRequest();
+                  xmlHttpUpdate.onreadystatechange = function() {
+                    if (xmlHttpUpdate.readyState == 4 && xmlHttpUpdate.status == 200){
+                      console.log(xmlHttpUpdate.responseText);
+                    }
                   }
-                }
-                xmlHttpUpdate.open("GET", update_url, true);
-                xmlHttpUpdate.send(null);
+                  xmlHttpUpdate.open("GET", update_url, true);
+                  xmlHttpUpdate.send(null);
 
-                // force update the token on opensea
-                var numPrev = parseInt(numPrevTokensMinted)
-                var numCurrent = parseInt(numCurrentTokensMinted)
-                for (var id=numPrev+1; id<=numCurrent; id++) {
-                  var idString = id.toString()
-                  setTimeout(function timer() {
-                    const options = {method: 'GET'};
-                    fetch('https://api.opensea.io/api/v1/asset/' + contract_address + '/' + idString + '/?force_update=true', options)
-                    .then(response => response.json())
-                    .then(response => console.log(response))
-                    .catch(err => console.error(err));
-                  }, id * 1500);
-                }
+                  // force update the token on opensea
+                  var numPrev = parseInt(numPrevTokensMinted)
+                  var numCurrent = parseInt(numCurrentTokensMinted)
+                  for (var id=numPrev+1; id<=numCurrent; id++) {
+                    var idString = id.toString()
+                    setTimeout(function timer() {
+                      const options = {method: 'GET'};
+                      fetch('https://api.opensea.io/api/v1/asset/' + contract_address + '/' + idString + '/?force_update=true', options)
+                      .then(response => response.json())
+                      .then(response => console.log(response))
+                      .catch(err => console.error(err));
+                    }, id * 1500);
+                  }
 
-                // set the image preview of the NFT
-                const tokenURI = contract.methods.tokenURI(numCurrent).call().then(function(tokenURIData) {
-                  document.getElementById("svg_img_section").style.display = "block";
-                  setNFTImage(tokenURIData)
-                }, function(error) {
-                  console.log("Couldn't get Token's URI")
-                });
+                  // set the image preview of the NFT
+                  const tokenURI = contract.methods.tokenURI(numCurrent).call().then(function(tokenURIData) {
+                    document.getElementById("svg_img_section").style.display = "block";
+                    setNFTImage(tokenURIData)
+                  }, function(error) {
+                    console.log("Couldn't get Token's URI")
+                  });
 
-                document.getElementById("opensea_link").href = "https://opensea.io/assets/" + contract_address + "/" + numCurrent.toString()
-                document.getElementById("opensea_link_section").style.display = "block";
+                  document.getElementById("opensea_link").href = "https://opensea.io/assets/" + contract_address + "/" + numCurrent.toString()
+                  document.getElementById("opensea_link_section").style.display = "block";
 
-            }, function(error) {
-              console.log("Couldn't get current Token Ids")
-            });
-          }, 2000);
-        })
-        .on('error', function(error, receipt) {
-          console.log("error");
-          // User rejected transaction
+              }, function(error) {
+                console.log("Couldn't get current Token Ids")
+              });
+            }, 2000);
+          })
+          .on('error', function(error, receipt) {
+            console.log("error");
+            // User rejected transaction
 
+          });
+        }, function(error) {
+          console.log("Couldn't get previous Token Ids")
         });
-      }, function(error) {
-        console.log("Couldn't get previous Token Ids")
-      });
+      })
+      .catch(function(error){
+        alert("Not enough funds (gas + mint cost)")
+        console.log(error)
+      });  
     }  
   }
   xmlHttp.open("GET", url, true); // true for asynchronous 
