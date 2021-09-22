@@ -381,7 +381,7 @@ exports.transactionAccepted = functions.https.onRequest( (req, res) => {
 // })
 
 
-let contract_address = "0x7aA7d28eB17d3555cE8d0974F9006Fe670F53e1e"
+let contract_address = "0xdBCe32eB91FDf3C63163799826b5F087D61b4456"
 // let contract_address = "0xd2E78e391EEb86AA23D4fE0c543567f7308ca710" // rinkeby
 exports.requestNFTUpdate = functions.https.onRequest( (req, res) => {
 	cors(req, res, () => {
