@@ -279,13 +279,15 @@ exports.getMintingSlot = functions.https.onRequest( (req, res) => {
 // If this function is not called (because tab is closed) then it'll still use the old
 // minting code and reservation time. When the reservation time expires, someone else can use.
 exports.transactionAccepted = functions.https.onRequest( (req, res) => {
-	admin.database().ref('currentMintingCodeTemp').once('value', (codeSnapshot) => {
-		admin.database().ref('reservationTimestampTemp').once('value', (reservationSnapshot) => {
-			admin.database().ref('currentMintingCodeTemp').set("");
-			admin.database().ref('reservationTimestampTemp').set("");
-			admin.database().ref('currentMintingCode').set(codeSnapshot.val());
-			admin.database().ref('reservationTimestamp').set(reservationSnapshot.val());
-			res.send("success")
+	cors(req, res, () => {
+		admin.database().ref('currentMintingCodeTemp').once('value', (codeSnapshot) => {
+			admin.database().ref('reservationTimestampTemp').once('value', (reservationSnapshot) => {
+				admin.database().ref('currentMintingCodeTemp').set("");
+				admin.database().ref('reservationTimestampTemp').set("");
+				admin.database().ref('currentMintingCode').set(codeSnapshot.val());
+				admin.database().ref('reservationTimestamp').set(reservationSnapshot.val());
+				res.send("success")
+			})
 		})
 	})
 })

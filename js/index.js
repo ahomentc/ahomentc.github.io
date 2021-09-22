@@ -332,7 +332,7 @@ async function mint() {
           .on('receipt', function(receipt){ // transacation was successful
             setTimeout(function(){
               document.getElementById("nft_minting_wait").style.display = "none";
-              document.getElementById("show_code").innerHTML = "Give the next person mint access with this code <br/>(expires after 2 hours): <br/><strong>" + code + "</strong>";
+              document.getElementById("show_code").innerHTML = "Give the next person mint access with this code <br/>(expires after 12 hours): <br/><strong>" + code + "</strong>";
 
               const currentTokensMinted = contract.methods.tokensMinted().call().then(function(numCurrentTokensMinted) { 
                 // request the backend to update. pass it the previous number of tokens and the current number.
@@ -450,7 +450,7 @@ function updateMintInfo() {
       document.getElementById("reserved_counter").innerHTML = "Code expires in " + minutes + " minutes";
     }
     else {
-      var hours = Math.floor(timeLeft / 60 / 60)
+      var hours = Math.ceil(timeLeft / 60 / 60)
       document.getElementById("reserved_counter").innerHTML = "Code expires in " + hours + " hours "
     }
     document.getElementById("minting_code_section").style.display = "block";
