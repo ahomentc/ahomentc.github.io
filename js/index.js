@@ -259,18 +259,8 @@ async function mint() {
 
   console.log(ethaddress);
 
-  var url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintFromTimeout?address=" + accounts[0]
-  // if (timeLeft > 0) {
-  //   var code = document.getElementById("enter_code").value;
-  //   if (code != "") {
-  //     // mint with requestMintFromCode
-  //     url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintFromCode?address=" + accounts[0] + "&code=" + code
-  //   }
-  //   else {
-  //     // can't mint without code so don't send request
-  //     return
-  //   }
-  // }
+  var code = document.getElementById("enter_code").value;
+  var url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintFromCode?address=" + accounts[0] + "&code=" + code
 
   // HOW TO DO PADDING FOR TIMELEFT
 
