@@ -430,37 +430,47 @@ exports.requestNFTUpdate = functions.https.onRequest( (req, res) => {
 	});
 });
 
-// call this after 61 seconds from frontend if they haven't started minting yet
-// could also have an http function thats called when the mint request is given. It runs for 
-// 2 minutes. After 70 seconds it checks to see if a mint request was sent (by checking to see
-// if the reservor address is not empty (also need to remove the removal of address from here)).
-// If mint request was not sent then change the timestamp like doing here.
-// This is better since people can reserve, then close the page (or refresh) and it'll still work.
-// exports.endNFTReservation = functions.https.onRequest( (req, res) => {
-// 	cors(req, res, () => {
-// 		const address = req.query.address;
-
-// 		// get the current holder
-// 		var ref = firebase.database().ref('mintReservor');
-// 		ref.once('value', (snapshot) => {
-// 			var reservor = snapshot.val()
-// 			if (reservor == address) {
-// 				admin.database().ref('reservationTimestamp').once('value', (snapshot) => {
-// 					var new_timestamp = parseInt(snapshot.val()) - 300
-// 					admin.database().ref('reservationTimestamp').set(new_timestamp)
-// 					admin.database().ref('mintReservor').set("");
-// 					res.send("success")
-// 				})
-// 			}
-// 		})
-// 	})
-
-// })
-
-
 // Goes through all the ids in the contract and adds the missing ones.
+// https://us-central1-storybits-2c8d4.cloudfunctions.net/addMissingNFTS?start=10&num_add=10
 exports.addMissingNFTS = functions.https.onRequest( (req, res) => {
 	cors(req, res, () => {
+
+		const start = req.query.start;
+		const num_add = req.query.num_add;
+		const numPrev = parseInt(start)
+		const numCurrent = parseInt(start) + parseInt(num_add)
+
+		var sync = new DispatchGroup();
+		var token_0 = sync.enter();
+		for (var id=numPrev+1; id<=numCurrent; id++) {
+			var token = sync.enter()
+			const updateRef = '/nft_words/' + id.toString()
+			const nft_word = contract.methods.words(id).call().then(function(word) { 
+
+				// check to see if the word already exists, if it doesn't that means 
+				// that a new nft was added, so remove the reservationTimestamp or lower it by 300
+				admin.database().ref(updateRef).once('value', (snapshot) => {
+					if (!(snapshot !== null && snapshot.val() !== null && snapshot.val() != undefined)) {
+						// admin.database().ref('reservationTimestamp').once('value', (snapshot) => {
+						// 	var new_timestamp = parseInt(snapshot.val()) - 300
+						// 	admin.database().ref('reservationTimestamp').set(new_timestamp)
+						// })
+						admin.database().ref(updateRef).set(word);
+	        			sync.leave(token);
+					}
+					else{
+						sync.leave(token);
+					}
+				})
+	        }, function(error) {
+	            console.log("Couldn't get NFT")
+	            console.log(error)
+	        });
+        }
+        sync.leave(token_0);
+		sync.notify(function() {
+			res.send("finished adding")
+		})
 	});
 });
 
