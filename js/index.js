@@ -517,7 +517,7 @@ function getMintingCode() {
       }
       else {
         var new_code = data.new_code;
-        document.getElementById("nft_sentence_textarea").value = new_code;
+        document.getElementById("enter_code").value = new_code;
       }
     }
   }
