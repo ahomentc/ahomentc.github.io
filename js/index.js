@@ -312,7 +312,7 @@ async function mint() {
       // Chain ID of Rinkeby Test Net is 3, replace it to 1 for Main Net
       var chainId = 1;
 
-      var est = web3.eth.estimateGas({"to": contract_address, from:ethaddress, "data": safeMint, value: totalAmountWei, "chainId": chainId})
+      var est = web3.eth.estimateGas({"to": contract_address, from:ethaddress, "data": safeMint, value: totalAmountWei})
       console.log(est)
       est.then(function(gasAmount){
         // get the previous number of nfts minted
