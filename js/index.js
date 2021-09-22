@@ -260,17 +260,17 @@ async function mint() {
   console.log(ethaddress);
 
   var url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintFromTimeout?address=" + accounts[0]
-  if (timeLeft > 0) {
-    var code = document.getElementById("enter_code").value;
-    if (code != "") {
-      // mint with requestMintFromCode
-      url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintFromCode?address=" + accounts[0] + "&code=" + code
-    }
-    else {
-      // can't mint without code so don't send request
-      return
-    }
-  }
+  // if (timeLeft > 0) {
+  //   var code = document.getElementById("enter_code").value;
+  //   if (code != "") {
+  //     // mint with requestMintFromCode
+  //     url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/requestMintFromCode?address=" + accounts[0] + "&code=" + code
+  //   }
+  //   else {
+  //     // can't mint without code so don't send request
+  //     return
+  //   }
+  // }
 
   // HOW TO DO PADDING FOR TIMELEFT
 
@@ -456,13 +456,12 @@ function updateMintInfo() {
   timeLeft -= 1
   if (timeLeft > 60 * 2) {
     var minutes = Math.ceil(timeLeft / 60)
-    if (minutes < 60) {
-      document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + minutes + " minutes";
+    if (minutes < 61) {
+      document.getElementById("reserved_counter").innerHTML = "Code expires in " + minutes + " minutes";
     }
     else {
       var hours = Math.floor(timeLeft / 60 / 60)
-      minutes = Math.ceil(minutes % 60)
-      document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + hours + " hours " + minutes + " minutes";
+      document.getElementById("reserved_counter").innerHTML = "Code expires in " + hours + " hours "
     }
     document.getElementById("minting_code_section").style.display = "block";
 
@@ -474,18 +473,56 @@ function updateMintInfo() {
     else {
       document.getElementById("nft_sentence_button").disabled = false;
     }
+
+    document.getElementById("reserve_minting_slot_button").disabled = true;
+    document.getElementById("minting_slot_section").style.display = "none";
   }
   else if (timeLeft > 0) {
     // disable both types of minting as a padding.
     document.getElementById("minting_code_section").style.display = "none";
     document.getElementById("nft_sentence_button").disabled = true;
     document.getElementById("reserved_counter").innerHTML = "Next minting slot in " + timeLeft + " seconds";
+
+    document.getElementById("reserve_minting_slot_button").disabled = true;
+    document.getElementById("minting_slot_section").style.display = "none";
   }
   else {
     document.getElementById("reserved_counter").innerHTML = "Minting Available!";
-    document.getElementById("minting_code_section").style.display = "none";
-    document.getElementById("nft_sentence_button").disabled = false;
+    document.getElementById("minting_code_section").style.display = "block";
+
+    document.getElementById("reserve_minting_slot_button").disabled = false;
+    document.getElementById("minting_slot_section").style.display = "block";
+
+    var code = document.getElementById("enter_code").value;
+    if (code == "") {
+      document.getElementById("nft_sentence_button").disabled = true;
+    }
+    else {
+      document.getElementById("nft_sentence_button").disabled = false;
+    }
   }
+}
+
+// once a code expires, if no new code is generated than a new code can be created.
+function getMintingCode() {
+  var url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/getMintingSlot"
+  var xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = function() { 
+    if (xmlHttp.readyState == 4 && xmlHttp.status == 200){
+      let data = JSON.parse(xmlHttp.responseText);
+
+      if (data.status == "fail") {
+        alert(data.err)
+        return;
+      }
+      else {
+        var new_code = data.new_code;
+        document.getElementById("nft_sentence_textarea").value = new_code;
+      }
+    }
+  }
+  xmlHttp.open("GET", url, true); // true for asynchronous 
+  xmlHttp.send(null);
 }
 
 function setCookie(name,value,days) {
@@ -531,6 +568,8 @@ window.addEventListener('load', async () => {
 
   document.querySelector("#toggleIds").addEventListener("click", toggleIds);
   document.querySelector("#nft_sentence_button").addEventListener("click", mint);
+  document.querySelector("#reserve_minting_slot_button").addEventListener("click", getMintingCode);
+  
   // document.querySelector("#reserve_mint_button").addEventListener("click", reserveMintingRights);
   // document.querySelector("#prev_img_button").addEventListener("click", viewNextImage);
   // document.querySelector("#next_img_button").addEventListener("click", viewPrevImage);

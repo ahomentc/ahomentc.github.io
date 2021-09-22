@@ -181,11 +181,61 @@ exports.requestMintFromCode = functions.https.onRequest( (req, res) => {
 // pad access to this for 10 seconds in front end so that someone doesn't do code and 
 // another person timout at the same time.
 // during that padding remove the code input
-exports.requestMintFromTimeout = functions.https.onRequest( (req, res) => {
-	// mintReservor is not longer being used
+// exports.requestMintFromTimeout = functions.https.onRequest( (req, res) => {
+// 	// mintReservor is not longer being used
+// 	cors(req, res, () => {
+// 		var web3 = new Web3("https://mainnet.infura.io/v3/fee8c943351648ac819a52f3ee66bfbc")
+// 		const address = req.query.address;
+// 		const reseration_hold_time = 60 * 60 * 12; // 12 hours
+// 		const currentTimestamp = Math.round(Date.now() / 1000);
+
+// 		var coeff = 1000 * 60 * 1; // round to nearest minute
+// 	  	var date = new Date();
+// 	  	var nearestMinute = new Date(Math.floor(date.getTime() / coeff) * coeff);
+// 	  	var nearestEpoch = nearestMinute.getUnixTime()
+
+// 		const reservationTimestampRef = admin.database().ref('reservationTimestamp');
+// 		reservationTimestampRef.transaction((reserved_timestamp) => {
+// 			if (reserved_timestamp === null) {
+// 		      return 123;
+// 		    }
+
+// 		    var new_code = Math.floor(Math.random() * 100000000000);
+
+// 		  	const hash = web3.utils.soliditySha3({ type: 'uint256', value: nearestEpoch });
+// 			const signObj = web3.eth.accounts.sign(hash, "1c9e8b6f202f1b2fa1813f5633904566860443ca27f1dbe65f25aeff7f8b8383");
+// 			var signature = signObj.signature.slice(2)
+// 			var r = "0x" + signature.slice(0, 64); var s = "0x" + signature.slice(64, 128); var v = parseInt(signature.slice(128),16);
+// 			var obj = {"status": "success", "time": nearestEpoch.toString(), "r": r, "s": s, "v": v, "new_code": new_code}
+
+// 			if (parseInt(currentTimestamp) - parseInt(reserved_timestamp) > 0) {
+// 				// admin.database().ref('currentMintingCode').set(new_code);
+// 				// res.send(JSON.stringify(obj));
+// 				// return currentTimestamp + reseration_hold_time;
+// 				var nextTimestamp = currentTimestamp + reseration_hold_time;
+// 				admin.database().ref('currentMintingCodeTemp').set(new_code);
+// 				admin.database().ref('reservationTimestampTemp').set(nextTimestamp);
+
+// 				// // if the transacation is accepted, then reservationTimestamp goes back to 20 minutes
+// 				// // Otherwise it stays at 120 seconds so that someone else can mint
+// 				var onHoldTimestamp = currentTimestamp + 120
+// 				admin.database().ref('reservationTimestamp').set(onHoldTimestamp);
+// 				res.send(JSON.stringify(obj));
+// 				return;
+// 			}
+// 			else {
+// 				// It hasn't been 15 minutes yet
+// 				res.send(JSON.stringify({"status": "fail", "err": "Error, you don't have minting reservation"}));
+// 				return;
+// 			}
+// 		})
+// 	});
+// });
+
+// Button appears that they can use to get minting slot
+exports.getMintingSlot = functions.https.onRequest( (req, res) => {
 	cors(req, res, () => {
 		var web3 = new Web3("https://mainnet.infura.io/v3/fee8c943351648ac819a52f3ee66bfbc")
-		const address = req.query.address;
 		const reseration_hold_time = 60 * 60 * 12; // 12 hours
 		const currentTimestamp = Math.round(Date.now() / 1000);
 
@@ -202,30 +252,20 @@ exports.requestMintFromTimeout = functions.https.onRequest( (req, res) => {
 
 		    var new_code = Math.floor(Math.random() * 100000000000);
 
-		  	const hash = web3.utils.soliditySha3({ type: 'uint256', value: nearestEpoch });
-			const signObj = web3.eth.accounts.sign(hash, "1c9e8b6f202f1b2fa1813f5633904566860443ca27f1dbe65f25aeff7f8b8383");
-			var signature = signObj.signature.slice(2)
-			var r = "0x" + signature.slice(0, 64); var s = "0x" + signature.slice(64, 128); var v = parseInt(signature.slice(128),16);
-			var obj = {"status": "success", "time": nearestEpoch.toString(), "r": r, "s": s, "v": v, "new_code": new_code}
-
 			if (parseInt(currentTimestamp) - parseInt(reserved_timestamp) > 0) {
 				// admin.database().ref('currentMintingCode').set(new_code);
 				// res.send(JSON.stringify(obj));
 				// return currentTimestamp + reseration_hold_time;
 				var nextTimestamp = currentTimestamp + reseration_hold_time;
-				admin.database().ref('currentMintingCodeTemp').set(new_code);
-				admin.database().ref('reservationTimestampTemp').set(nextTimestamp);
+				admin.database().ref('currentMintingCode').set(new_code);
+				admin.database().ref('reservationTimestamp').set(nextTimestamp);
+				var obj = {"status": "success", "new_code": new_code}
 
-				// // if the transacation is accepted, then reservationTimestamp goes back to 20 minutes
-				// // Otherwise it stays at 120 seconds so that someone else can mint
-				var onHoldTimestamp = currentTimestamp + 120
-				admin.database().ref('reservationTimestamp').set(onHoldTimestamp);
 				res.send(JSON.stringify(obj));
 				return;
 			}
 			else {
-				// It hasn't been 15 minutes yet
-				res.send(JSON.stringify({"status": "fail", "err": "Error, you don't have minting reservation"}));
+				res.send(JSON.stringify({"status": "fail", "err": "Error, someone else has the minting slot now."}));
 				return;
 			}
 		})
@@ -236,6 +276,8 @@ exports.requestMintFromTimeout = functions.https.onRequest( (req, res) => {
 // what if minting code expired, transaction fail since gas too high, then try again?
 
 // transaction was accepted so set reservationTimestamp and currentMintingCode
+// If this function is not called (because tab is closed) then it'll still use the old
+// minting code and reservation time. When the reservation time expires, someone else can use.
 exports.transactionAccepted = functions.https.onRequest( (req, res) => {
 	admin.database().ref('currentMintingCodeTemp').once('value', (codeSnapshot) => {
 		admin.database().ref('reservationTimestampTemp').once('value', (reservationSnapshot) => {
