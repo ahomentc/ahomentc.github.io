@@ -487,7 +487,7 @@ function updateMintInfo() {
     document.getElementById("minting_slot_section").style.display = "none";
   }
   else {
-    document.getElementById("reserved_counter").innerHTML = "Minting Available!";
+    document.getElementById("reserved_counter").innerHTML = "New Minting Code Available!";
     document.getElementById("minting_code_section").style.display = "block";
 
     document.getElementById("reserve_minting_slot_button").disabled = false;

@@ -348,8 +348,8 @@ header.masthead h1 {
   border-radius: 15px;
   padding: 15px 20px 15px 20px;
   border-width: 0px;
-  background-color: #FFF;
-  color: black;
+  background-color: #3c3c3c;
+  color: #FFF;
 }
 
 #reserve_minting_slot_button:focus {
@@ -358,8 +358,8 @@ header.masthead h1 {
 
 #reserve_minting_slot_button:disabled{
   border: 1px solid #999999;
-  background-color: #cccccc;
-  color: #666666;
+  background-color: #3c3c3c;
+  color: #DDD;
 }
 
 #reserve_minting_slot_button:hover {
