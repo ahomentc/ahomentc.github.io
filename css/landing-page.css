@@ -362,11 +362,6 @@ header.masthead h1 {
   color: #DDD;
 }
 
-#reserve_minting_slot_button:hover {
-  outline:0;
-  background-color: rgb(10,10,10);
-}
-
 #enter_code {
   padding: 10px 15px 10px 15px;
   border-radius: 10px;
