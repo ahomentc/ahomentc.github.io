@@ -451,7 +451,7 @@ exports.addMissingNFTs = functions.https.onRequest( (req, res) => {
 					for (var id=numPrev+1; id<=numCurrent; id++) {
 						var token = sync.enter()
 						const updateRef = '/nft_sentences/' + id.toString()
-						const nft_word = contract.methods.words(id).call().then(function(word) { 
+						const nft_word = contract.methods.sentences(id).call().then(function(word) { 
 
 							// check to see if the word already exists, if it doesn't that means 
 							// that a new nft was added, so remove the reservationTimestamp or lower it by 300
