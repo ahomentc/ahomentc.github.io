@@ -362,8 +362,10 @@ async function mint() {
       // Chain ID of Rinkeby Test Net is 3, replace it to 1 for Main Net
       var chainId = 1;
 
-      var est = web3.eth.estimateGas({"to": contract_address, from:ethaddress, "data": safeMint, value: totalAmountWei})
+      var est = web3.eth.estimateGas({"to": contract_address, "from":ethaddress, "data": safeMint, value: totalAmountWei})
       est.then(function(gasAmount){
+        console.log(gasAmount)
+
         // get the previous number of nfts minted
         const prevTokensMinted = contract.methods.tokensMinted().call().then(function(numPrevTokensMinted) { 
           // var numPrev = parseInt(numPrevTokensMinted)
@@ -446,7 +448,7 @@ async function mint() {
         });
       })
       .catch(function(error){
-        alert("Not enough funds in wallet (gas + mint cost). Try again when gas fees are lower.")
+        alert("Transaction is likely to fail. Suggestions: Try again later when gas fees are lower or refresh page.")
         console.log(error)
       });  
     }  
