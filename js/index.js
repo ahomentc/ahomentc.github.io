@@ -619,7 +619,7 @@ window.addEventListener('load', async () => {
 
   refreshNFTs();
 
-  document.querySelector("#toggleIds").addEventListener("click", toggleIds);
+  // document.querySelector("#toggleIds").addEventListener("click", toggleIds);
   document.querySelector("#nft_sentence_button").addEventListener("click", mint);
   document.querySelector("#reserve_minting_slot_button").addEventListener("click", getMintingCode);
   
@@ -627,10 +627,6 @@ window.addEventListener('load', async () => {
   // document.querySelector("#prev_img_button").addEventListener("click", viewNextImage);
   // document.querySelector("#next_img_button").addEventListener("click", viewPrevImage);
 });
-
-
-
-
 
 
 
