@@ -257,7 +257,7 @@ function textChanged() {
     document.getElementById("nft_sentence_textarea").value = sentences_arr.join(" ")
     alert("Max of 10 sentences per mint.")
   }
-  if (sentences_arr!=null sentences_arr.length > 0) {
+  if (sentences_arr!=null && sentences_arr.length > 0) {
     sentences = sentences_arr
   }
 
