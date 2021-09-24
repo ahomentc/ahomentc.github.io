@@ -383,9 +383,10 @@ async function mint() {
             // can't have transactionAccepted here since the transaction could still fail.
           })
           .on('receipt', function(receipt){ // transacation was successful
+            alert("Pass mint access to the next person with this code (expires after 12 hours): " + code)
             setTimeout(function(){
               document.getElementById("nft_minting_wait").style.display = "none";
-              document.getElementById("show_code").innerHTML = "Give the next person mint access with this code <br/>(expires after 12 hours): <br/><strong>" + code + "</strong>";
+              document.getElementById("show_code").innerHTML = "Pass mint access to the next person with this code <br/>(expires after 12 hours): <br/><strong>" + code + "</strong>";
 
               var update_url = "https://us-central1-storybits-2c8d4.cloudfunctions.net/transactionAccepted"
               var xmlHttpUpdate = new XMLHttpRequest();
