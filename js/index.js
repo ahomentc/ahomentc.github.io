@@ -137,7 +137,7 @@ var DispatchGroup = (function() {
 
 function addNFTWithId(id, word){
     var html = '<a href="https://opensea.io/assets/' + contract_address + '/' + id.toString() + '" target="_blank" style="text-decoration: none; color: white;"><div style="float: left; margin: 5px;">'
-    html += '<div class="nft text-center my-auto mx-auto">'
+    html += '<div class="nft text-left my-auto mx-auto">'
     html += '<div class="" style="padding-top: 0px;"><p><span style="padding-right: 5px; color: gray;">' + id.toString() + ": <span style='color: white;'>" + word + "</span></span></p></div>"
     html += '</div></div></a>'
     document.getElementById("nfts").innerHTML += html
